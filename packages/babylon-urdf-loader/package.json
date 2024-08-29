@@ -16,9 +16,17 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/xml2js": "^0.4.14",
     "nodemon": "^3.1.4",
     "typescript": "^5.5.4",
     "vite": "^5.4.2",
     "vite-plugin-dts": "^4.0.3"
+  },
+  "peerDependencies": {
+    "@babylonjs/core": "^7.22.5"
+  },
+  "dependencies": {
+    "events": "^3.3.0",
+    "xml2js": "^0.6.2"
   }
 }

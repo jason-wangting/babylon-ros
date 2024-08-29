@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
+import { peerDependencies } from './package.json';
 
 export default defineConfig({
   build: {
@@ -8,6 +9,10 @@ export default defineConfig({
       name: 'URDFLoader',
       fileName: 'urdf-loader',
       formats: ['es', 'umd']
+    },
+    rollupOptions: {
+      // make sure to externalize deps that shouldn't be bundled
+      external: Object.keys(peerDependencies || {}),
     },
     sourcemap: true,
     emptyOutDir: true,

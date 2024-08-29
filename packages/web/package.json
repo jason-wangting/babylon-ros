@@ -10,9 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@babylonjs/core": "^7.22.5",
+    "@babylonjs/inspector": "^7.22.5",
+    "@babylonjs/loaders": "^7.22.5",
+    "babylon-urdf-loader": "workspace:*",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "babylon-urdf-loader": "workspace:*"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
