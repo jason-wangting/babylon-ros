@@ -1,0 +1,52 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+/packages/*/node_modules
+
+# testing
+/coverage
+/packages/*/coverage
+
+# production
+/packages/*/dist
+/packages/*/build_adhoc
+/packages/*/build/*
+/packages/*/release/node_modules
+/packages/*/lib
+/packages/*/.next
+/packages/*/uploads
+
+
+# misc
+.DS_Store
+# .env.*
+# .env
+/tmp
+*.tmp-test.*
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+/logs
+/src/logs
+*.log
+/packages/*/logs
+/packages/*/src/logs
+/packages/*/*.log
+*.eslintcache
+/packages/*/*.eslintcache
+
+
+#IDEA
+.idea
+.vscode/*
+
+#python
+**/__pycache__/
+
+*storybook.log

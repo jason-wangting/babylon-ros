@@ -1,0 +1,18 @@
+{
+  "name": "babylon-ros",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "urdf:dev": "pnpm --filter babylon-urdf-loader run dev",
+    "urdf:build": "pnpm --filter babylon-urdf-loader run build",
+    "web:dev": "pnpm --filter web run dev",
+    "dev": "concurrently \"pnpm run urdf:dev\" \"pnpm run web:dev\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
