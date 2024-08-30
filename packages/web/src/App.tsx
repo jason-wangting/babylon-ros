@@ -11,9 +11,11 @@ function App() {
     }
   }, []);
   return (
-    <div style={{height: "100%", width: "100%", overflow: 'hidden', position: "absolute"}}>
-      <ToolBar/>
-      <canvas id="preview-canvas" />
+    <div style={{ height: "100%", width: "100%", overflow: 'hidden' }}>
+      <ToolBar />
+      <div style={{ height: "calc(100% - 60px)", width: "100%" }}>
+        <canvas id="preview-canvas" />
+      </div>
     </div>
   )
 }
