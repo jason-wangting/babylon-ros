@@ -5,7 +5,9 @@ import { Link } from "./Link";
 
 
 export class Robot {
-    public name: string = "";
+    public name = "";
+    public filename = "";
+    public rootUrl = "";
 
     public transform: TransformNode | undefined;
 

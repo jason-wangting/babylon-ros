@@ -157,16 +157,14 @@ export async function deserializeJoint(jointObject: any) : Promise<Joint> {
     return joint;
 }
 
-export async function deserializeUrdfToRobot(urdfString: string) : Promise<Robot> {
-    let urdf = await parseUrdf(urdfString);
+export async function deserializeUrdfToRobot(urdfString: string, robot: Robot) : Promise<Robot> {
+    const urdf = await parseUrdf(urdfString);
 
-    let robot = new Robot();
-    console.log({urdf});
     robot.name = urdf.robot.$?.name;
 
     if (urdf.robot.material instanceof Array) {
-      for (let material of urdf.robot.material) {
-        let m = await deserializeMaterial(material);
+      for (const material of urdf.robot.material) {
+        const m = deserializeMaterial(material);
         robot.materials.set(m.name, m);
       }
     }
