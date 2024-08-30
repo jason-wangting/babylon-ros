@@ -1,4 +1,4 @@
-import { TransformNode, Scene, Vector3 } from "@babylonjs/core";
+import { TransformNode, Scene, Vector3, AbstractMesh } from "@babylonjs/core";
 import { IMaterial } from "./Material";
 import { Joint } from "./Joint";
 import { Link } from "./Link";
@@ -9,32 +9,47 @@ export class Robot {
     public filename = "";
     public rootUrl = "";
 
-    public transform: TransformNode | undefined;
+    // root transform node
+    public transformNode: TransformNode | undefined;
 
     public links: Map<string, Link> = new Map<string, Link>();
     public joints: Map<string, Joint> = new Map<string, Joint>();
     public materials: Map<string, IMaterial> = new Map<string, IMaterial>();
 
-    constructor() {
-        this.materials.set("default", new IMaterial());
+    /**
+     * the array of loaded mesh
+     */
+    public loadedMeshes: AbstractMesh[] = [];
+    /**
+     * the array of loaded transformNode
+     */
+    public loadedTransformNodes: TransformNode[] = [];
+
+    constructor(
+        // the scene to import into
+        public scene: Scene
+    ) {
+        this.materials.set("default", new IMaterial(this));
     }
 
-    create(scene: Scene) {
-        this.transform = new TransformNode(this.name, scene);
+    create() {
+        this.transformNode = new TransformNode(this.name, this.scene);
+        this.loadedTransformNodes.push(this.transformNode);
 
         // Babylon JS coordinate system to ROS transform
-        this.transform.rotation = new Vector3(-Math.PI / 2, 0, 0);
+        this.transformNode.rotation = new Vector3(-Math.PI / 2, 0, 0);
 
-        for (let [name, mat] of this.materials) {
-            mat.create(scene);
+        
+        for (const mat of this.materials.values()) {
+            mat.create();
         }
 
-        for (let [name, link] of this.links) {
-            link.create(scene, this.materials);
+        for (const link of this.links.values()) {
+            link.create();
         }
 
-        for (let [name, joint] of this.joints) {
-            joint.create(scene, this.materials);
+        for (const joint of this.joints.values()) {
+            joint.create();
         }
 
         // NOTES:
@@ -58,7 +73,7 @@ export class Robot {
         }
 
         // Fixup transform tree
-        for (let [name, joint] of this.joints) {
+        for (const joint of this.joints.values()) {
             // A Joint connects two links - each has a transform
             // We want this joint to be conncted to the "parent" link between the two links
             if (joint.transform) {
@@ -79,13 +94,13 @@ export class Robot {
 
         for (let [name, link] of this.links) {
             if (link.transform && link.transform.parent == undefined) {
-                link.transform.parent = this.transform;
+                link.transform.parent = this.transformNode;
             }
         }
     }
 
     public dispose(): void {
-        this.transform?.dispose();
+        this.transformNode?.dispose();
 
         for (let [name, mat] of this.materials) {
             mat.material?.dispose();

@@ -1,25 +1,22 @@
 import { AbstractMesh, TransformNode, Scene, MeshBuilder } from "@babylonjs/core";
 import { IGeometry } from "./IGeometry";
 import { IMaterial } from "../objects/Material";
+import { Robot } from "../objects/Robot";
 
 export class GeometrySphere implements IGeometry {
-    public radius : number = 0;
-
 
     public meshes: AbstractMesh[] = [];
     public transform?: TransformNode;
 
-    constructor(r: number) {
-        this.radius = r;
-    }
+    constructor(private robot: Robot, private radius: number) {}
     
-    public create(scene: Scene, mat?: IMaterial) : void {
-        this.transform = new TransformNode("mesh_sphere", scene);
+    public create(mat?: IMaterial) : void {
+        this.transform = new TransformNode("mesh_sphere", this.robot.scene);
 
         this.meshes.push(MeshBuilder.CreateSphere("sphere", 
             {
                 diameter: this.radius * 2.0,
-            }, scene));
+            }, this.robot.scene));
 
         this.meshes[0].parent = this.transform;
         if (mat != undefined && mat.material != undefined) {

@@ -20,8 +20,8 @@ export async function parseUrdf(urdf: string) : Promise<any> {
     }));
 }
 
-export function deserializeMaterial(materialNode: any) : IMaterial {
-    let m = new IMaterial();
+export function deserializeMaterial(materialNode: any, robot: Robot) : IMaterial {
+    let m = new IMaterial(robot);
     m.name = materialNode.$?.name;
     if (materialNode.color?.length == 1 && materialNode.color[0].$?.rgba) {
         let color = Util.parseColor(materialNode.color[0].$.rgba);
@@ -40,8 +40,8 @@ export function deserializeMaterial(materialNode: any) : IMaterial {
     return m;
 }
 
-export async function deserializeVisual(visualObject: any) : Promise<Visual> {
-    const visual = new Visual();
+export async function deserializeVisual(visualObject: any, robot: Robot) : Promise<Visual> {
+    const visual = new Visual(robot);
 
     if (visualObject.origin && visualObject.origin.length == 1) {
       if (visualObject.origin[0].$.xyz) {
@@ -53,31 +53,31 @@ export async function deserializeVisual(visualObject: any) : Promise<Visual> {
     }
 
     if (visualObject.material?.length == 1) {
-      visual.material = deserializeMaterial(visualObject.material[0]);
+      visual.material = deserializeMaterial(visualObject.material[0], robot);
     } else if (visualObject.material?.length > 1) {
         throw new Error("Visual has multiple materials; must only have 1.");
     } 
 
     if (visualObject.geometry[0]?.cylinder && visualObject.geometry[0]?.cylinder.length == 1) {
-      visual.geometry = new GeometryCylinder(visualObject.geometry[0].cylinder[0].$?.length || 0, visualObject.geometry[0].cylinder[0].$?.radius || 0);
+      visual.geometry = new GeometryCylinder(robot, visualObject.geometry[0].cylinder[0].$?.length || 0, visualObject.geometry[0].cylinder[0].$?.radius || 0);
       } else if  (visualObject.geometry[0]?.box && visualObject.geometry[0]?.box.length == 1) {
         let size = Util.parseVector(visualObject.geometry[0].box[0].$.size);
-        visual.geometry = new GeometryBox(size.x, size.y, size.z);
+        visual.geometry = new GeometryBox(robot, size.x, size.y, size.z);
       } else if (visualObject.geometry[0]?.mesh != null) {
         let s = new Vector3(1, 1, 1);
         if (visualObject.geometry[0].mesh[0].$?.scale) {
           s = Util.parseVector(visualObject.geometry[0].mesh[0].$.scale);
         }
-        visual.geometry = new GeometryMesh(visualObject.geometry[0].mesh[0].$?.filename, s);
+        visual.geometry = new GeometryMesh(robot, visualObject.geometry[0].mesh[0].$?.filename, s);
       } else if (visualObject.geometry[0]?.sphere != null) {
-        visual.geometry = new GeometrySphere(visualObject.geometry[0].sphere[0].$?.radius || 1.0);
+        visual.geometry = new GeometrySphere(robot, visualObject.geometry[0].sphere[0].$?.radius || 1.0);
     }
 
     return visual;
 }
 
-export async function deserializeLink(linkObject: any) : Promise<Link> {
-    let link = new Link();
+export async function deserializeLink(linkObject: any, robot: Robot) : Promise<Link> {
+    const link = new Link(robot);
     if (linkObject.$?.name) {
       link.name = linkObject.$.name;
     } else {
@@ -89,8 +89,8 @@ export async function deserializeLink(linkObject: any) : Promise<Link> {
     } 
 
     if (linkObject.visual?.length > 0) {
-      for (let visual of linkObject.visual) {
-        let v = await deserializeVisual(visual);
+      for (const visual of linkObject.visual) {
+        const v = await deserializeVisual(visual, robot);
         v.name = link.name;
         link.visuals.push(v);
       }
@@ -98,8 +98,8 @@ export async function deserializeLink(linkObject: any) : Promise<Link> {
     return link;
 }
 
-export async function deserializeJoint(jointObject: any) : Promise<Joint> {
-    let joint = new Joint();
+export async function deserializeJoint(jointObject: any, robot: Robot) : Promise<Joint> {
+    const joint = new Joint(robot);
     if (jointObject.$?.name) {
       joint.name = jointObject.$.name;
     } else {
@@ -164,14 +164,14 @@ export async function deserializeUrdfToRobot(urdfString: string, robot: Robot) :
 
     if (urdf.robot.material instanceof Array) {
       for (const material of urdf.robot.material) {
-        const m = deserializeMaterial(material);
+        const m = deserializeMaterial(material, robot);
         robot.materials.set(m.name, m);
       }
     }
 
     if (urdf.robot.link instanceof Array) {
       for (let link of urdf.robot.link) {
-        let l = await deserializeLink(link);
+        let l = await deserializeLink(link, robot);
         if (robot.links.has(l.name)) {
           throw new Error(`Robot already has ${l.name} please use another name for the second link.`);
         } else {
@@ -182,7 +182,7 @@ export async function deserializeUrdfToRobot(urdfString: string, robot: Robot) :
 
     if (urdf.robot.joint instanceof Array) {
       for (let joint of urdf.robot.joint) {
-        let j = await deserializeJoint(joint);
+        let j = await deserializeJoint(joint, robot);
         robot.joints.set(j.name, j);
 
         let p = robot.links.get(j.parentName);

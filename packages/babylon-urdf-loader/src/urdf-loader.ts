@@ -3,6 +3,10 @@ import { deserializeUrdfToRobot } from "./deserialize";
 import { Robot } from "./objects/Robot";
 export class URDFLoader implements ISceneLoaderPluginAsync{
     /**
+     * weather wrap a transformNode for a link or not
+     */
+    static Wrap_TransfromNode_For_Link = false;
+    /**
      * Defines the name of the plugin.
      */ 
     name = "URDF";
@@ -25,17 +29,17 @@ export class URDFLoader implements ISceneLoaderPluginAsync{
      */
     async importMeshAsync(meshesNames: string | readonly string[] | null | undefined, scene: Scene, data: unknown, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult> {
         console.log("importMeshAsync");
-        const robot = new Robot();
+        const robot = new Robot(scene);
         robot.filename = fileName || "";
         robot.rootUrl = rootUrl;
         await deserializeUrdfToRobot(data as string, robot);
-        robot.create(scene);
+        robot.create();
         return {
-            meshes: [],
+            meshes: robot.loadedMeshes,
             particleSystems: [],
             skeletons: [],
             animationGroups: [],
-            transformNodes: [],
+            transformNodes: robot.loadedTransformNodes,
             geometries: [],
             lights: [],
             spriteManagers: [],

@@ -1,4 +1,5 @@
 import { Color4, Scene, StandardMaterial, Texture, Color3, Material } from "@babylonjs/core";
+import { Robot } from "./Robot";
 
 export class IMaterial {
     public name: string = "default";
@@ -6,20 +7,19 @@ export class IMaterial {
     public color?: Color4;
     public material?: Material;
 
-    constructor() {
-    }
+    constructor( private robot: Robot ) {}
 
     public isReference(): boolean {
         return this.filename === "" && this.color == undefined;
     }
 
-    public create(scene: Scene): void {
+    public create(): void {
         if (this.filename) {
-            let c = new StandardMaterial(this.name, scene);
+            const c = new StandardMaterial(this.name, this.robot.scene);
             c.diffuseTexture = new Texture(this.filename);
             c.diffuseTexture.hasAlpha = true;
         } else {
-            let m = new StandardMaterial(this.name, scene);
+            const m = new StandardMaterial(this.name, this.robot.scene);
 
             if (this.color == undefined) {
                 this.color = new Color4(1, 1, 1, 1);

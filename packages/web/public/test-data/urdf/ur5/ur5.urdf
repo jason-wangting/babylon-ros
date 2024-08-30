@@ -1,0 +1,215 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro"
+       name="sirobot_ur5" >
+
+  <xacro:property name="pi" value="3.14159265" />
+
+   <link name="base_link" >
+      <visual>
+        <geometry>
+          <mesh filename="package://visual/base.dae" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 5.0"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://collision/base.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="Joint_base_1" type="revolute">
+      <parent link="base_link" />
+      <child link = "shoulder_link" />
+      <origin xyz="0.0 0.0 0.089159" rpy="0.0 0.0 3.1415926535" />
+      <axis xyz="0 0 1" />
+    <limit
+      lower="-6.2832"
+      upper="6.2832"
+      effort="0"
+      velocity="0" />
+    </joint>
+
+    <link name="shoulder_link">
+      <visual>
+        <geometry>
+          <mesh filename="package://visual/shoulder.dae" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 5.0"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://collision/shoulder.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="joint_1_2" type="revolute">
+      <parent link="shoulder_link" />
+      <child link = "upper_arm_link" />
+      <origin xyz="0.0 0.13585 0.0" rpy="0.0 1.570796325 0.0 " />
+      <axis xyz="0 1 0" />
+    <limit
+      lower="-6.2832"
+      upper="6.2832"
+      effort="0"
+      velocity="0" />
+    </joint>
+
+    <link name="upper_arm_link">
+      <visual>
+        <geometry>
+          <mesh filename="package://visual/upperarm.dae" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 5.0"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://collision/upperarm.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="joint_2_3" type="revolute">
+      <parent link="upper_arm_link" />
+      <child link = "forearm_link" />
+      <origin xyz="0.0 -0.1197 0.42500" rpy="0 0 0" />
+      <axis xyz="0 1 0" />
+    <limit
+      lower="-6.2832"
+      upper="6.2832"
+      effort="0"
+      velocity="0" />
+    </joint>
+
+    <link name="forearm_link">
+      <visual>
+        <geometry>
+          <mesh filename="package://visual/forearm.dae" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 5.0"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://collision/forearm.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="joint_3_4" type="revolute">
+      <parent link="forearm_link" />
+      <child link = "wrist_1_link" />
+      <origin xyz="0.0 0.0 0.39225" rpy="0.0 1.570796325 0.0" />
+      <axis xyz="0 1 0" />
+    <limit
+      lower="-6.2832"
+      upper="6.2832"
+      effort="0"
+      velocity="0" />
+    </joint>
+
+    <link name="wrist_1_link">
+      <visual>
+        <geometry>
+          <mesh filename="package://visual/wrist1.dae" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 5.0"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://collision/wrist1.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="joint_4_5" type="revolute">
+      <parent link="wrist_1_link" />
+      <child link = "wrist_2_link" />
+      <origin xyz="0.0 0.093 0.0" rpy="0.0 0.0 0.0" />
+      <axis xyz="0 0 1" />
+    <limit
+      lower="-6.2832"
+      upper="6.2832"
+      effort="0"
+      velocity="0" />
+    </joint>
+
+    <link name="wrist_2_link">
+      <visual>
+        <geometry>
+          <mesh filename="package://visual/wrist2.dae" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 5.0"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://collision/wrist2.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="joint_5_6" type="revolute">
+      <parent link="wrist_2_link" />
+      <child link = "wrist_3_link" />
+      <origin xyz="0.0 0.0 0.09465" rpy="0.0 0.0 0.0" />
+      <axis xyz="0 1 0" />
+      <dynamics damping="0.0" friction="0.0"/>
+    <limit
+      lower="-6.2832"
+      upper="6.2832"
+      effort="0"
+      velocity="0" />
+    </joint>
+
+    <link name="wrist_3_link">
+      <visual>
+        <geometry>
+          <mesh filename="package://visual/wrist3.dae" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 5.0"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://collision/wrist3.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="ee_fixed_joint" type="fixed">
+      <parent link="wrist_3_link" />
+      <child link = "ee_link" />
+      <origin xyz="0.0 0.0823 0.0" rpy="0.0 0.0 1.570796325" />
+    <limit
+      lower="-6.2832"
+      upper="6.2832"
+      effort="0"
+      velocity="0" />
+    </joint>
+
+    <link name="ee_link">
+      <collision>
+        <geometry>
+          <box size="0.01 0.01 0.01"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="-0.01 0 0"/>
+      </collision>
+    </link>
+
+
+    <!-- ROS base_link to UR 'Base' Coordinates transform -->
+
+</robot>

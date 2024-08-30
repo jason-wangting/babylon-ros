@@ -1,6 +1,7 @@
 import { AbstractMesh, TransformNode, Scene, MeshBuilder } from "@babylonjs/core";
 import { IGeometry } from "./IGeometry";
 import { IMaterial } from "../objects/Material";
+import { Robot } from "../objects/Robot";
 
 export class GeometryCylinder implements IGeometry {
     public length : number = 0;
@@ -9,19 +10,19 @@ export class GeometryCylinder implements IGeometry {
     public meshes: AbstractMesh[] = [];
     public transform?: TransformNode;
 
-    constructor(l : number, r: number) {
+    constructor(private robot: Robot, l : number, r: number) {
         this.length = l;
         this.radius = r;
     }
     
-    public create(scene: Scene, mat?: IMaterial) : void {
-        this.transform = new TransformNode("mesh_cylinder", scene);
+    public create(mat?: IMaterial) : void {
+        this.transform = new TransformNode("mesh_cylinder", this.robot.scene);
 
         this.meshes.push(MeshBuilder.CreateCylinder("cylinder", 
             {
                 diameter: this.radius * 2.0,
                 height: this.length
-            }, scene));
+            }, this.robot.scene));
 
         this.meshes[0].parent = this.transform;
         this.meshes[0].addRotation(Math.PI / 2.0, 0, 0);

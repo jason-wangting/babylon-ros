@@ -28,6 +28,5 @@ export function parseColor(color: string) : Color4 {
 }
 
 export function applyRotationToTransform(transformNode : TransformNode, vec: Vector3) {
-
   transformNode.addRotation(0, 0, vec.z).addRotation(0, vec.y, 0).addRotation(vec.x, 0, 0);
 }

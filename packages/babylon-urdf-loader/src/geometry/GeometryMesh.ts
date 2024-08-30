@@ -1,21 +1,17 @@
 import { IGeometry } from "./IGeometry";
 import { Vector3, AbstractMesh, TransformNode, Scene, IParticleSystem, Skeleton, SceneLoader } from '@babylonjs/core';
 import { IMaterial } from '../objects/Material';
+import { Robot } from "../objects/Robot";
 
 export class GeometryMesh implements IGeometry {
-    public uri: string = "";
-    public scale: Vector3 = new Vector3(1.0, 1.0, 1.0);
 
     public meshes?: AbstractMesh[];
     public transform?: TransformNode;
     public material?: IMaterial;
 
-    constructor(uri: string, scale: Vector3) {
-        this.uri = uri;
-        this.scale = scale;
-    }
+    constructor(private robot: Robot, private uri: string, private scale: Vector3) {}
     
-    private meshCallback(scene: Scene, meshes : AbstractMesh[], particleSystems : IParticleSystem[] | undefined, skeletons : Skeleton[] | undefined) {
+    private meshCallback(meshes : AbstractMesh[], particleSystems : IParticleSystem[] | undefined, skeletons : Skeleton[] | undefined) {
         // Get a pointer to the mesh
         if (meshes.length > 0 && this.transform) {
             this.meshes = meshes;
@@ -45,16 +41,20 @@ export class GeometryMesh implements IGeometry {
     }
 
 
-    public create(scene: Scene, mat?: IMaterial) : void {
-        this.transform = new TransformNode("mesh_mesh", scene);
+    public create(mat?: IMaterial) : void {
+        this.transform = new TransformNode("mesh_mesh", this.robot.scene);
         this.transform.scaling = this.scale;
 
         this.material = mat;
 
-        if (this.uri.startsWith("file://"))
-        {
+        let modelUri = this.uri;
+        if (modelUri.startsWith("package://")) {
+            modelUri = `${this.robot.rootUrl}${this.uri.replace("package://", "")}`
+        }
+
+        if (modelUri.startsWith("file://")) {
             // Handle relative paths
-            // var filePath = this.uri.substring(7); 
+            // var filePath = modelUri.substring(7); 
             // if (!filePath.startsWith("/")) {
             //     filePath = path.join(__dirname, filePath);
             // }
@@ -64,12 +64,10 @@ export class GeometryMesh implements IGeometry {
             // // Force the file to be read as base64 encoded data blob
             // SceneLoader.ImportMesh(null, "", "data:;base64," + meshdata, scene, (mesh, ps, sk) => {this.meshCallback(scene, mesh, ps, sk)}, null, null, fileExtension);
         } else {
-            let filename = this.uri.substring(this.uri.lastIndexOf('/') + 1);
+            const filename = modelUri.substring(modelUri.lastIndexOf('/') + 1);
             if (filename) {
-                let base = this.uri.substring(0, this.uri.lastIndexOf('/') + 1);
-                SceneLoader.ImportMesh(null, base, filename, scene, (...args) => {
-                    const [mesh, ps, sk] = args;
-                    this.meshCallback(scene, mesh, ps, sk)});
+                const base = modelUri.substring(0, modelUri.lastIndexOf('/') + 1);
+                SceneLoader.ImportMesh(null, base, filename, this.robot.scene, this.meshCallback.bind(this));
             }
         }
     }

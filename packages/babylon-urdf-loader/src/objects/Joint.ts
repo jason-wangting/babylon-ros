@@ -1,7 +1,7 @@
-import { Vector3, TransformNode, Scene } from "@babylonjs/core";
+import { Vector3, TransformNode } from "@babylonjs/core";
 import * as Util from "../util";
 import { Link } from "./Link";
-import { IMaterial } from "./Material";
+import { Robot } from "./Robot";
 
 export enum JointType {
     Fixed = "fixed",
@@ -33,9 +33,11 @@ export class Joint {
     public lowerLimit: number = 0;
     public upperLimit: number = 0;
 
-    public create(scene: Scene, materialMap: Map<string, IMaterial>): void {
+    constructor( private robot: Robot ) {}
 
-        this.transform = new TransformNode(this.name, scene);
+    public create(): void {
+
+        this.transform = new TransformNode(this.name, this.robot.scene);
         this.transform.position = this.origin;
         Util.applyRotationToTransform(this.transform, this.rpy);
     }

@@ -2,6 +2,7 @@ import { Vector3, TransformNode, Scene, Material } from '@babylonjs/core';
 import { IMaterial } from './Material';
 import { IGeometry } from '../geometry/IGeometry';
 import * as Util from '../util';
+import { Robot } from './Robot';
 
 export class Visual {
     public name: string = "";
@@ -14,23 +15,25 @@ export class Visual {
     public rpy: Vector3 = new Vector3(0, 0, 0);
     public transform?: TransformNode;
 
-    public create(scene: Scene, materialMap: Map<string, IMaterial>): void {
+    constructor( private robot: Robot ) {}
 
-        this.transform = new TransformNode(this.name, scene);
+    public create(): void {
+
+        this.transform = new TransformNode(this.name, this.robot.scene);
         this.transform.position = this.origin;
         Util.applyRotationToTransform(this.transform, this.rpy);
 
         let mat = this.material;
         if (this.material != undefined) {
             if (this.material.isReference()) {
-                mat = materialMap.get(this.material.name);
+                mat = this.robot.materials.get(this.material.name);
             } else {
-                this.material.create(scene);
+                this.material.create();
             }
         }
 
         if (this.geometry != undefined) {
-            this.geometry.create(scene, mat);
+            this.geometry.create(mat);
 
             if (this.transform != undefined && this.geometry.transform != undefined) {
                 this.geometry.transform.parent = this.transform;

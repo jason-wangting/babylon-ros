@@ -5,6 +5,6 @@ export interface IGeometry {
     meshes?: AbstractMesh[];
     transform?: TransformNode;
 
-    create(scene: Scene, mat?: IMaterial) : void;
+    create(mat?: IMaterial) : void;
     dispose() : void;
 }

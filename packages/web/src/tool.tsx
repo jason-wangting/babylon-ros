@@ -1,7 +1,6 @@
 import { editor } from "./editor"
 
 const URDFTestList = [
-    { name: "Basic", url: "/test-data/urdf/basic.urdf" },
     { name: "joint", url: "/test-data/urdf/basic_with_joint.urdf" },
     { name: "material", url: "/test-data/urdf/basic_with_material.urdf" },
     { name: "remote-mesh", url: "/test-data/urdf/basic_with_remote_mesh.urdf" },
@@ -12,6 +11,7 @@ const URDFTestList = [
     { name: "orientation", url: "/test-data/urdf/orientation.urdf" },
     { name: "r2", url: "/test-data/urdf/r2.urdf" },
     { name: "aubo-i5", url: "/test-data/urdf/aubo-i5/aubo_i5.urdf" },
+    { name: "ur5", url: "/test-data/urdf/ur5/ur5.urdf" },
 ]
 export default function ToolBar() {
     console.log("ToolBar");
