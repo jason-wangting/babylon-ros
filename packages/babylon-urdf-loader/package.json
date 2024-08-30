@@ -1,6 +1,6 @@
 {
   "name": "babylon-urdf-loader",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "urdf file loader for babylonjs",
   "main": "dist/urdf-loader.umd.js",
   "module": "dist/urdf-loader.mjs",
