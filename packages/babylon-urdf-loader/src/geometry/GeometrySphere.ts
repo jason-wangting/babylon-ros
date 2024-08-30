@@ -2,7 +2,7 @@ import { AbstractMesh, TransformNode, Scene, MeshBuilder } from "@babylonjs/core
 import { IGeometry } from "./IGeometry";
 import { IMaterial } from "../objects/Material";
 
-export class Sphere implements IGeometry {
+export class GeometrySphere implements IGeometry {
     public radius : number = 0;
 
 

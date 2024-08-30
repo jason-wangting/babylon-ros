@@ -3,7 +3,7 @@ import { Mesh, TransformNode, Scene, MeshBuilder } from "@babylonjs/core";
 import { IGeometry } from "./IGeometry";
 import { IMaterial } from "../objects/Material";
 
-export class Box implements IGeometry {
+export class GeometryBox implements IGeometry {
     public width : number = 0;
     public height : number = 0;
     public depth : number = 0;

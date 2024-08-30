@@ -3,10 +3,10 @@ import { parseString } from 'xml2js';
 import * as Util from './util';
 import { IMaterial } from './objects/Material';
 import { Visual } from './objects/Visual';
-import { Cylinder } from './geometry/GeometryCylinder';
-import { Box } from './geometry/GeometryBox';
+import { GeometryCylinder } from './geometry/GeometryCylinder';
+import { GeometryBox } from './geometry/GeometryBox';
 import { Vector3 } from '@babylonjs/core';
-import { Sphere } from './geometry/GeometrySphere';
+import { GeometrySphere } from './geometry/GeometrySphere';
 import { Link } from './objects/Link';
 import { Joint, JointType } from './objects/Joint';
 import { Robot } from './objects/Robot';
@@ -59,10 +59,10 @@ export async function deserializeVisual(visualObject: any) : Promise<Visual> {
     } 
 
     if (visualObject.geometry[0]?.cylinder && visualObject.geometry[0]?.cylinder.length == 1) {
-      visual.geometry = new Cylinder(visualObject.geometry[0].cylinder[0].$?.length || 0, visualObject.geometry[0].cylinder[0].$?.radius || 0);
+      visual.geometry = new GeometryCylinder(visualObject.geometry[0].cylinder[0].$?.length || 0, visualObject.geometry[0].cylinder[0].$?.radius || 0);
       } else if  (visualObject.geometry[0]?.box && visualObject.geometry[0]?.box.length == 1) {
         let size = Util.parseVector(visualObject.geometry[0].box[0].$.size);
-        visual.geometry = new Box(size.x, size.y, size.z);
+        visual.geometry = new GeometryBox(size.x, size.y, size.z);
       } else if (visualObject.geometry[0]?.mesh != null) {
         let s = new Vector3(1, 1, 1);
         if (visualObject.geometry[0].mesh[0].$?.scale) {
@@ -70,7 +70,7 @@ export async function deserializeVisual(visualObject: any) : Promise<Visual> {
         }
         visual.geometry = new GeometryMesh(visualObject.geometry[0].mesh[0].$?.filename, s);
       } else if (visualObject.geometry[0]?.sphere != null) {
-        visual.geometry = new Sphere(visualObject.geometry[0].sphere[0].$?.radius || 1.0);
+        visual.geometry = new GeometrySphere(visualObject.geometry[0].sphere[0].$?.radius || 1.0);
     }
 
     return visual;
