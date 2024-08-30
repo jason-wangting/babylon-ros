@@ -1,6 +1,6 @@
 {
   "name": "babylon-urdf-loader",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "urdf file loader for babylonjs",
   "main": "dist/urdf-loader.umd.js",
   "module": "dist/urdf-loader.mjs",
@@ -26,7 +26,7 @@
     "dev": "nodemon --watch src --ext ts,tsx --ignore dist --exec \"pnpm run build\"",
     "build": "vite build",
     "prepublishOnly": "pnpm build",
-    "publish": "pnpm publish --registry https://registry.npmjs.org/"
+    "publish": "pnpm publish --registry https://registry.npmjs.org/ --tag beta"
   },
   "devDependencies": {
     "@types/xml2js": "^0.4.14",
