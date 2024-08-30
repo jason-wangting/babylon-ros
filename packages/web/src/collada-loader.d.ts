@@ -1,0 +1,1 @@
+declare module '@polyhobbyist/babylon-collada-loader';
