@@ -1,15 +1,16 @@
 
 import { parseString } from 'xml2js';
 import * as Util from './util';
-import { IMaterial } from './Material';
-import { Visual } from './Visual';
-import { Cylinder } from './GeometryCylinder';
-import { Box } from './GeometryBox';
-import { Mesh, Vector3 } from '@babylonjs/core';
-import { Sphere } from './GeometrySphere';
-import { Link } from './Link';
-import { Joint, JointType } from './Joint';
-import { Robot } from './Robot';
+import { IMaterial } from './objects/Material';
+import { Visual } from './objects/Visual';
+import { Cylinder } from './geometry/GeometryCylinder';
+import { Box } from './geometry/GeometryBox';
+import { Vector3 } from '@babylonjs/core';
+import { Sphere } from './geometry/GeometrySphere';
+import { Link } from './objects/Link';
+import { Joint, JointType } from './objects/Joint';
+import { Robot } from './objects/Robot';
+import { GeometryMesh } from './geometry/GeometryMesh';
 export async function parseUrdf(urdf: string) : Promise<any> {
     return await new Promise((resolve, reject) => parseString(urdf, (err, jsonData) => {
         if (err) {
@@ -40,7 +41,7 @@ export function deserializeMaterial(materialNode: any) : IMaterial {
 }
 
 export async function deserializeVisual(visualObject: any) : Promise<Visual> {
-    let visual = new Visual();
+    const visual = new Visual();
 
     if (visualObject.origin && visualObject.origin.length == 1) {
       if (visualObject.origin[0].$.xyz) {
@@ -67,7 +68,7 @@ export async function deserializeVisual(visualObject: any) : Promise<Visual> {
         if (visualObject.geometry[0].mesh[0].$?.scale) {
           s = Util.parseVector(visualObject.geometry[0].mesh[0].$.scale);
         }
-        visual.geometry = new Mesh(visualObject.geometry[0].mesh[0].$?.filename, s);
+        visual.geometry = new GeometryMesh(visualObject.geometry[0].mesh[0].$?.filename, s);
       } else if (visualObject.geometry[0]?.sphere != null) {
         visual.geometry = new Sphere(visualObject.geometry[0].sphere[0].$?.radius || 1.0);
     }

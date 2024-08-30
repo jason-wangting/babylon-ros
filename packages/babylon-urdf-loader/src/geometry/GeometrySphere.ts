@@ -1,35 +1,32 @@
 import { AbstractMesh, TransformNode, Scene, MeshBuilder } from "@babylonjs/core";
 import { IGeometry } from "./IGeometry";
-import { IMaterial } from "./Material";
+import { IMaterial } from "../objects/Material";
 
-export class Cylinder implements IGeometry {
-    public length : number = 0;
+export class Sphere implements IGeometry {
     public radius : number = 0;
 
 
     public meshes: AbstractMesh[] = [];
-    public transform : TransformNode | undefined;
+    public transform?: TransformNode;
 
-    constructor(l : number, r: number) {
-        this.length = l;
+    constructor(r: number) {
         this.radius = r;
     }
     
-    public create(scene: Scene, mat : IMaterial | undefined) : void {
-        this.transform = new TransformNode("mesh_cylinder", scene);
+    public create(scene: Scene, mat?: IMaterial) : void {
+        this.transform = new TransformNode("mesh_sphere", scene);
 
-        this.meshes.push(MeshBuilder.CreateCylinder("cylinder", 
+        this.meshes.push(MeshBuilder.CreateSphere("sphere", 
             {
                 diameter: this.radius * 2.0,
-                height: this.length
             }, scene));
 
         this.meshes[0].parent = this.transform;
-        this.meshes[0].addRotation(Math.PI / 2.0, 0, 0);
         if (mat != undefined && mat.material != undefined) {
             this.meshes[0].material = mat.material;
         }
-     }
+    }
+
     public dispose() : void {
         if (this.meshes != undefined) {
             this.meshes.forEach(m => {

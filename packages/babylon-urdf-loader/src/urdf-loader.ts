@@ -1,5 +1,5 @@
-import { AssetContainer, Engine, ISceneLoaderAsyncResult, ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderPluginExtensions, ISceneLoaderProgressEvent, Scene, SceneLoader } from "@babylonjs/core";
-import * as urdf from './urdf';
+import { AssetContainer, Engine, ISceneLoaderAsyncResult, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, Scene } from "@babylonjs/core";
+import { deserializeUrdfToRobot } from "./deserialize";
 export class URDFLoader implements ISceneLoaderPluginAsync{
     /**
      * Defines the name of the plugin.
@@ -24,7 +24,7 @@ export class URDFLoader implements ISceneLoaderPluginAsync{
      */
     async importMeshAsync(meshesNames: string | readonly string[] | null | undefined, scene: Scene, data: unknown, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<ISceneLoaderAsyncResult> {
         console.log("importMeshAsync");
-        const robot = await urdf.deserializeUrdfToRobot(data as string);
+        const robot = await deserializeUrdfToRobot(data as string);
         robot.create(scene);
         return {
             meshes: [],

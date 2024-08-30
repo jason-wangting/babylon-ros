@@ -4,16 +4,16 @@ import { IMaterial } from "./Material";
 import { Visual } from "./Visual";
 
 export class Link {
-    public name : string = "";
+    public name: string = "";
 
-    public material : IMaterial | undefined = undefined;
-    public transform : TransformNode | undefined;
+    public material?: IMaterial;
+    public transform?: TransformNode;
 
-    public visuals : Array<Visual> = new Array<Visual>();
+    public visuals: Array<Visual> = new Array<Visual>();
 
     // public collisions : Visual | undefined = undefined;
 
-    public create(scene: Scene, materialMap : Map<string, IMaterial>) {
+    public create(scene: Scene, materialMap: Map<string, IMaterial>) {
         this.transform = new TransformNode(this.name, scene);
 
         if (this.visuals.length > 0) {
@@ -26,7 +26,7 @@ export class Link {
         }
     }
 
-    public dispose() : void {
+    public dispose(): void {
         this.material?.dispose();
         this.transform?.dispose();
         if (this.visuals.length > 0) {

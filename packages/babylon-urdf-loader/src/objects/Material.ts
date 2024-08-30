@@ -1,19 +1,19 @@
 import { Color4, Scene, StandardMaterial, Texture, Color3, Material } from "@babylonjs/core";
 
 export class IMaterial {
-    public name : string = "default";
-    public filename : string = "";
-    public color : Color4 | undefined = undefined;
-    public material : Material | undefined = undefined
+    public name: string = "default";
+    public filename: string = "";
+    public color?: Color4;
+    public material?: Material;
 
     constructor() {
     }
 
-    public isReference() : boolean {
+    public isReference(): boolean {
         return this.filename === "" && this.color == undefined;
     }
-    
-    public create(scene: Scene) : void {
+
+    public create(scene: Scene): void {
         if (this.filename) {
             let c = new StandardMaterial(this.name, scene);
             c.diffuseTexture = new Texture(this.filename);

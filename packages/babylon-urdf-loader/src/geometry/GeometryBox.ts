@@ -1,16 +1,15 @@
 
-import { Mesh, TransformNode, Scene, Material, MeshBuilder } from "@babylonjs/core";
+import { Mesh, TransformNode, Scene, MeshBuilder } from "@babylonjs/core";
 import { IGeometry } from "./IGeometry";
-import { IMaterial } from "./Material";
+import { IMaterial } from "../objects/Material";
 
 export class Box implements IGeometry {
     public width : number = 0;
     public height : number = 0;
     public depth : number = 0;
 
-
     public meshes: Mesh[] = [];
-    public transform : TransformNode | undefined;
+    public transform?: TransformNode;
 
     constructor(x : number, y: number, z: number) {
 
@@ -24,7 +23,7 @@ export class Box implements IGeometry {
         this.depth = z;
     }
     
-    public create(scene: Scene, mat : IMaterial | undefined) : void {
+    public create(scene: Scene, mat?: IMaterial) : void {
         this.transform = new TransformNode("mesh_box", scene);
 
         this.meshes.push(MeshBuilder.CreateBox("box", 
