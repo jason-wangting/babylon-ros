@@ -13,6 +13,11 @@ export default defineConfig({
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
       external: Object.keys(peerDependencies || {}),
+      output: {
+        globals: {
+          "@babylonjs/core": "BABYLON"
+        }
+      }
     },
     sourcemap: true,
     emptyOutDir: true,
