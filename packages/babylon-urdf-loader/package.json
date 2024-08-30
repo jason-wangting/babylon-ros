@@ -1,7 +1,7 @@
 {
   "name": "babylon-urdf-loader",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "urdf file loader for babylonjs",
   "main": "dist/urdf-loader.umd.js",
   "module": "dist/urdf-loader.mjs",
   "types": "dist/index.d.ts",
@@ -10,7 +10,9 @@
   ],
   "scripts": {
     "dev": "nodemon --watch src --ext ts,tsx --ignore dist --exec \"pnpm run build\"",
-    "build": "vite build"
+    "build": "vite build",
+    "prepublishOnly": "pnpm build",
+    "publish": "pnpm publish"
   },
   "keywords": [],
   "author": "",
