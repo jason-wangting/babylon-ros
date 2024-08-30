@@ -6,6 +6,7 @@
   "scripts": {
     "urdf:dev": "pnpm --filter babylon-urdf-loader run dev",
     "urdf:build": "pnpm --filter babylon-urdf-loader run build",
+    "urdf:publish": "pnpm --filter babylon-urdf-loader run publish",
     "web:dev": "pnpm --filter web run dev",
     "dev": "concurrently \"pnpm run urdf:dev\" \"pnpm run web:dev\""
   },

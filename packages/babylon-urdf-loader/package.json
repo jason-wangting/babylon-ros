@@ -8,15 +8,26 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jason-wangting/babylon-ros.git"
+  },
+  "keywords": [
+    "babylon",
+    "babylonjs",
+    "urdf",
+    "loader",
+    "robotics",
+    "ros"
+  ],
+  "author": "Jason Wang",
+  "license": "ISC",
   "scripts": {
     "dev": "nodemon --watch src --ext ts,tsx --ignore dist --exec \"pnpm run build\"",
     "build": "vite build",
     "prepublishOnly": "pnpm build",
     "publish": "pnpm publish"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "@types/xml2js": "^0.4.14",
     "nodemon": "^3.1.4",
