@@ -1,4 +1,4 @@
-import { TransformNode, Scene, Vector3, AbstractMesh } from "@babylonjs/core";
+import { TransformNode, Scene, Vector3, AbstractMesh, Node, Skeleton } from "@babylonjs/core";
 import { IMaterial } from "./Material";
 import { Joint } from "./Joint";
 import { Link } from "./Link";
@@ -7,48 +7,46 @@ import { Link } from "./Link";
 export class Robot {
     public name = "";
     public filename = "";
+    /**
+     * refer to https://doc.babylonjs.com/features/featuresDeepDive/importers/createImporters
+     * the root URL of assets
+     */
     public rootUrl = "";
 
     // root transform node
-    public transformNode: TransformNode | undefined;
+    public transformNode!: TransformNode;
 
-    public links: Map<string, Link> = new Map<string, Link>();
-    public joints: Map<string, Joint> = new Map<string, Joint>();
-    public materials: Map<string, IMaterial> = new Map<string, IMaterial>();
-
-    /**
-     * the array of loaded mesh
-     */
-    public loadedMeshes: AbstractMesh[] = [];
-    /**
-     * the array of loaded transformNode
-     */
-    public loadedTransformNodes: TransformNode[] = [];
+    public linkMap: Map<string, Link> = new Map<string, Link>();
+    public jointMap: Map<string, Joint> = new Map<string, Joint>();
+    public materialMap: Map<string, IMaterial> = new Map<string, IMaterial>();
 
     constructor(
         // the scene to import into
         public scene: Scene
     ) {
-        this.materials.set("default", new IMaterial(this));
+        this.materialMap.set("default", new IMaterial(this));
     }
 
-    create() {
+    async create() {
         this.transformNode = new TransformNode(this.name, this.scene);
-        this.loadedTransformNodes.push(this.transformNode);
 
         // Babylon JS coordinate system to ROS transform
         this.transformNode.rotation = new Vector3(-Math.PI / 2, 0, 0);
 
-        
-        for (const mat of this.materials.values()) {
+        // create meaterials
+        for (const mat of this.materialMap.values()) {
             mat.create();
         }
 
-        for (const link of this.links.values()) {
-            link.create();
+        const createLinkPromises: Promise<void>[] = [];
+        // create links
+        for (const link of this.linkMap.values()) {
+            createLinkPromises.push(link.create())            
         }
+        await Promise.all(createLinkPromises);
 
-        for (const joint of this.joints.values()) {
+        // create joints
+        for (const joint of this.jointMap.values()) {
             joint.create();
         }
 
@@ -62,10 +60,10 @@ export class Robot {
         // Base_footprint is an orphan tree, so applying our root transform to convert to babylon coordinate system won't work.
         // We need to apply the transform to the base_link instead.
 
-        let base = this.links.get("base_link");
+        let base = this.linkMap.get("base_link");
 
         if (base == null || base == undefined) {
-            base = this.links.get("base_footprint");
+            base = this.linkMap.get("base_footprint");
         }
 
         if (base == undefined) {
@@ -73,45 +71,71 @@ export class Robot {
         }
 
         // Fixup transform tree
-        for (const joint of this.joints.values()) {
+        for (const joint of this.jointMap.values()) {
             // A Joint connects two links - each has a transform
             // We want this joint to be conncted to the "parent" link between the two links
             if (joint.transform) {
-                if (joint.parent && joint.parent.transform) {
-                    joint.transform.parent = joint.parent.transform;
+                // joint.parent is a link
+                const parentLink = joint.parent;
+                if (parentLink?.transform) {
+                    joint.transform.parent = parentLink.transform;
                 } else {
-                    // TODO: Is this a bug?
+                    throw new Error(`Can not find parent link for ${joint.name}`);
                 }
 
                 // We also want the child link to point to this joints' transform.
-                if (joint.child && joint.child.transform) {
-                    joint.child.transform.parent = joint.transform;
+                // joint.child is a link
+                const childLink = joint.child;
+                if (childLink?.transform) {
+                    childLink.transform.parent = joint.transform;
                 } else {
-                    // TODO: Is this a bug?
+                    throw new Error(`Can not find child link for ${joint.name}`);
                 }
             }
         }
 
-        for (let [name, link] of this.links) {
-            if (link.transform && link.transform.parent == undefined) {
-                link.transform.parent = this.transformNode;
-            }
-        }
+        // set root link parent
+        Array.from(this.linkMap.values())
+            .filter(link => !link.transform.parent)
+            .forEach(link => link.transform.parent = this.transformNode)
     }
 
     public dispose(): void {
         this.transformNode?.dispose();
 
-        for (let [name, mat] of this.materials) {
+        for (let [name, mat] of this.materialMap) {
             mat.material?.dispose();
         }
 
-        for (let [name, link] of this.links) {
+        for (let [name, link] of this.linkMap) {
             link.dispose();
         }
 
-        for (let [name, joint] of this.joints) {
+        for (let [name, joint] of this.jointMap) {
             joint.dispose();
+        }
+    }
+
+    public getResult() {
+        const loadedMeshes: AbstractMesh[] = [];
+        const loadedTransformNodes: TransformNode[] = [];
+        const loadedSkeletons: Skeleton[] = [];
+
+        const loop = (node: Node) => {
+            if (node instanceof AbstractMesh) {
+                loadedMeshes.push(node);
+                node.skeleton && loadedSkeletons.push(node.skeleton);
+            } else if (node instanceof TransformNode) {
+                loadedTransformNodes.push(node);
+            }
+            node.getChildren().forEach(childNode => loop(childNode));
+            
+        }
+        loop(this.transformNode);
+        return {
+            loadedMeshes,
+            loadedTransformNodes,
+            loadedSkeletons
         }
     }
 }

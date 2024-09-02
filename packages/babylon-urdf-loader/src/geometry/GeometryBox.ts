@@ -4,30 +4,24 @@ import { IGeometry } from "./IGeometry";
 import { IMaterial } from "../objects/Material";
 import { Robot } from "../objects/Robot";
 
-export class GeometryBox implements IGeometry {
-    public width : number = 0;
-    public height : number = 0;
-    public depth : number = 0;
+export class GeometryBox extends IGeometry {
 
-    public meshes: Mesh[] = [];
-    public transform?: TransformNode;
+    // BabylonJS maps w/h/d differently than ROS
+    // d: z
+    // h: y
+    // w: x
+    constructor(
+        private robot: Robot,
+        private width: number = 0,
+        private height: number = 0,
+        private depth: number = 0) {
+            super();
+        }
 
-    constructor(private robot: Robot, x : number, y: number, z: number) {
+    public async create(mat?: IMaterial) {
+        this.transform = new TransformNode("box-transform", this.robot.scene);
 
-        // BabylonJS maps w/h/d differently than ROS
-        // d: z
-        // h: y
-        // w: x
-
-        this.width = x;
-        this.height = y;
-        this.depth = z;
-    }
-    
-    public create(mat?: IMaterial) : void {
-        this.transform = new TransformNode("mesh_box", this.robot.scene);
-
-        this.meshes.push(MeshBuilder.CreateBox("box", 
+        this.meshes.push(MeshBuilder.CreateBox("box",
             {
                 width: this.width,
                 height: this.height,
@@ -35,18 +29,9 @@ export class GeometryBox implements IGeometry {
             }, this.robot.scene));
 
         this.meshes[0].parent = this.transform;
-        if (mat != undefined && mat.material != undefined) {
+        if (mat && mat.material) {
             this.meshes[0].material = mat.material;
         }
-    }
-    
-    public dispose() : void {
-        if (this.meshes != undefined) {
-            this.meshes.forEach(m => {
-                m.dispose();
-            });
-        }
-        this.transform?.dispose();
     }
 
 }

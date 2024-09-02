@@ -11,194 +11,260 @@ import { Link } from './objects/Link';
 import { Joint, JointType } from './objects/Joint';
 import { Robot } from './objects/Robot';
 import { GeometryMesh } from './geometry/GeometryMesh';
-export async function parseUrdf(urdf: string) : Promise<any> {
+export async function parseUrdf(urdf: string): Promise<any> {
     return await new Promise((resolve, reject) => parseString(urdf, (err, jsonData) => {
         if (err) {
-        reject(err);
+            reject(err);
         }
         resolve(jsonData);
     }));
 }
 
-export function deserializeMaterial(materialNode: any, robot: Robot) : IMaterial {
-    let m = new IMaterial(robot);
-    m.name = materialNode.$?.name;
-    if (materialNode.color?.length == 1 && materialNode.color[0].$?.rgba) {
-        let color = Util.parseColor(materialNode.color[0].$.rgba);
-        m.color = color
-        return m;
-    } else if (materialNode.color?.length > 1) {
-        throw new Error(`Material ${materialNode.$?.name} has multiple color values; should only have 1.`);
+/**
+ * refer to https://wiki.ros.org/urdf/XML/link
+ * <link> <visual> <material>
+ * @param materialObject 
+ * @param robot 
+ * @returns 
+ */
+export function deserializeMaterial(materialObject: any, robot: Robot): IMaterial {
+    const m = new IMaterial(robot);
+    m.name = materialObject.$?.name;
+    if (materialObject.color?.[0]?.$?.rgba) {
+        m.color = Util.parseColor(materialObject.color[0].$.rgba);
     }
-
-    if (materialNode.texture?.length == 1 && materialNode.texture[0].$?.filename) {
-        m.filename = materialNode.texture[0].$.filename;
-    } else if (materialNode.texture?.length > 1) {
-        throw new Error(`Material ${materialNode.$?.name} has multiple texture values; should only have 1.`);
-    } 
-    
+    if (materialObject.texture?.[0]?.$?.filename) {
+        m.filename = materialObject.texture[0].$.filename;
+    }
     return m;
 }
 
-export async function deserializeVisual(visualObject: any, robot: Robot) : Promise<Visual> {
+/**
+ * refer to https://wiki.ros.org/urdf/XML/link
+ * <robot> <link> <visual>
+ * @param visualObject 
+ * @param robot 
+ * @returns 
+ */
+export async function deserializeVisual(visualObject: any, robot: Robot): Promise<Visual> {
     const visual = new Visual(robot);
 
-    if (visualObject.origin && visualObject.origin.length == 1) {
-      if (visualObject.origin[0].$.xyz) {
+    // name attribute is optional in <visual> element
+    visual.name = visualObject.$?.name;
+
+    // The reference frame of the visual element with respect to the reference frame of the link.
+    if (visualObject.origin?.[0]?.$?.xyz) {
         visual.origin = Util.parseVector(visualObject?.origin[0].$.xyz);
-      }
-      if (visualObject.origin[0].$.rpy) {
+    }
+    if (visualObject.origin?.[0]?.$?.rpy) {
         visual.rpy = Util.parseRPY(visualObject.origin[0].$.rpy);
-      }
     }
 
-    if (visualObject.material?.length == 1) {
-      visual.material = deserializeMaterial(visualObject.material[0], robot);
-    } else if (visualObject.material?.length > 1) {
-        throw new Error("Visual has multiple materials; must only have 1.");
-    } 
+    // the material of the visual element
+    // <robot> <link> <visual> <material>
+    if (visualObject.material?.[0]) {
+        visual.material = deserializeMaterial(visualObject.material[0], robot);
+    }
 
-    if (visualObject.geometry[0]?.cylinder && visualObject.geometry[0]?.cylinder.length == 1) {
-      visual.geometry = new GeometryCylinder(robot, visualObject.geometry[0].cylinder[0].$?.length || 0, visualObject.geometry[0].cylinder[0].$?.radius || 0);
-      } else if  (visualObject.geometry[0]?.box && visualObject.geometry[0]?.box.length == 1) {
-        let size = Util.parseVector(visualObject.geometry[0].box[0].$.size);
+    // <robot> <link> <visual> <geometry>
+    if (!visualObject.geometry?.[0]) {
+        throw new Error("Visual must have a geometry element.");
+    }
+    const geometryObject = visualObject.geometry[0];
+
+    if (geometryObject.cylinder) {
+        const cylinder = geometryObject.cylinder[0];
+        visual.geometry = new GeometryCylinder(robot, cylinder.$?.length || 0, cylinder.$?.radius || 0);
+    } else if (geometryObject.box) {
+        const box = geometryObject.box[0];
+        const size = Util.parseVector(box.$.size);
         visual.geometry = new GeometryBox(robot, size.x, size.y, size.z);
-      } else if (visualObject.geometry[0]?.mesh != null) {
-        let s = new Vector3(1, 1, 1);
-        if (visualObject.geometry[0].mesh[0].$?.scale) {
-          s = Util.parseVector(visualObject.geometry[0].mesh[0].$.scale);
+    } else if (geometryObject.sphere) {
+        const sphere = geometryObject.sphere[0];
+        visual.geometry = new GeometrySphere(robot, sphere.$?.radius || 1.0);
+    } else if (geometryObject.mesh) {
+        const mesh = geometryObject.mesh[0];
+        let scale = new Vector3(1, 1, 1);
+        if (mesh.$?.scale) {
+            scale = Util.parseVector(geometryObject.$.scale);
         }
-        visual.geometry = new GeometryMesh(robot, visualObject.geometry[0].mesh[0].$?.filename, s);
-      } else if (visualObject.geometry[0]?.sphere != null) {
-        visual.geometry = new GeometrySphere(robot, visualObject.geometry[0].sphere[0].$?.radius || 1.0);
+        visual.geometry = new GeometryMesh(robot, mesh.$?.filename, scale);
+    } else {
+        throw new Error("Visual geometry must have one of below: Cylinder, Box, Sphere, Mesh");
     }
 
     return visual;
 }
 
-export async function deserializeLink(linkObject: any, robot: Robot) : Promise<Link> {
+/**
+ * refer to https://wiki.ros.org/urdf/XML/link
+ * <robot> <link>
+ * @param linkObject 
+ * @param robot 
+ * @returns 
+ */
+export async function deserializeLink(linkObject: any, robot: Robot): Promise<Link> {
     const link = new Link(robot);
-    if (linkObject.$?.name) {
-      link.name = linkObject.$.name;
-    } else {
-      throw new Error("Links must have a name.");
+    link.name = linkObject.$.name;
+
+    if (!link.name) {
+        throw new Error("Links must have a name.");
     }
 
-    if (linkObject.material?.length == 1) {
-        throw new Error(`Link ${link.name} has a material; Did you mean to put it on visual?`);
-    } 
+    // <robot> <link> <visual>
+    // multiple instances of <visual> tags can exist for the same link. 
+    // The union of the geometry they define forms the visual representation of the link.
+    if (Array.isArray(linkObject.visual)) {
+        for (const visualIndex in linkObject.visual) {
+            const visual = linkObject.visual[visualIndex];
+            const v = await deserializeVisual(visual, robot);
+            if (!v.name) {
+                v.name = `${link.name} visual`;
+            }
 
-    if (linkObject.visual?.length > 0) {
-      for (const visual of linkObject.visual) {
-        const v = await deserializeVisual(visual, robot);
-        v.name = link.name;
-        link.visuals.push(v);
-      }
+            link.visuals.push(v);
+        }
     }
+
+    // for now, ignore the <inertail> and <collision> elements
     return link;
 }
 
-export async function deserializeJoint(jointObject: any, robot: Robot) : Promise<Joint> {
+/**
+ * refer to https://wiki.ros.org/urdf/XML/joint
+ * <robot> <joint>
+ * @param jointObject 
+ * @param robot 
+ * @returns 
+ */
+export async function deserializeJoint(jointObject: any, robot: Robot): Promise<Joint> {
     const joint = new Joint(robot);
-    if (jointObject.$?.name) {
-      joint.name = jointObject.$.name;
-    } else {
-      throw new Error("Links must have a name.");
-    }
-    
-    if (jointObject.$?.type) {
-      try {
-      joint.type = jointObject.$.type as JointType;
-      } catch {
-        throw new Error(`Link ${joint.name} has an unknown type.`);
-      }
-    } else {
-      throw new Error(`Link ${joint.name} must have a type.`);
+
+    joint.name = jointObject.$?.name;
+    if (!joint.name) {
+        throw new Error("Joint must have a name.");
     }
 
-    if (jointObject.limit?.length == 1) {
-        joint.lowerLimit = parseFloat(jointObject.limit[0].$?.lower);
-        joint.upperLimit = parseFloat(jointObject.limit[0].$?.upper);
-    } 
-    
-    if ((joint.type == JointType.Prismatic ||
-        joint.type == JointType.Revolute) &&
-        (jointObject.limit?.length == 0 ||
-          jointObject.limit[0].$.effort == undefined ||
-          jointObject.limit[0].$.velocity == undefined)) {
-      throw new Error(`a Prismatic or Revolute Joint ${jointObject.$?.name} must specify effort and velocity.`);
+    // Joint element mush have type attribute
+    joint.type = jointObject.$?.type as JointType;
+    // type mush be one of the following.
+    if (![JointType.Revolute, JointType.Continuous, JointType.Prismatic, JointType.Fixed, JointType.Floating, JointType.Planar].includes(joint.type)) {
+        throw new Error(`Joint ${joint.name} has an unknown type.`);
     }
 
-    if (jointObject.parent == undefined || jointObject.parent.length == 0) {
-      throw new Error(`Joint ${jointObject.$?.name} must have a parent.`);
-    } else if (jointObject.parent.length == 1) {
+    // if type is revolute or prismatic, <limit> element is required.
+    if (
+        (joint.type === JointType.Prismatic || joint.type === JointType.Revolute) &&
+        !jointObject.limit?.[0]
+    ) {
+        throw new Error(`a Prismatic or Revolute Joint ${jointObject.$?.name} must <limit> element.`);
+    }
+    // <robot> <joint> <limit>
+    if (jointObject.limit?.[0]) {
+        const limit = jointObject.limit[0];
+        const limitAttributes = limit.$;
+        if (!limitAttributes?.effort || !limitAttributes?.velocity) {
+            throw new Error('a <limit> element mush have effor and velocity attributes.');
+        }
+        if (limitAttributes?.lower) {
+            joint.lowerLimit = parseFloat(limitAttributes.lower);
+        }
+        if (limitAttributes?.upper) {
+            joint.upperLimit = parseFloat(limitAttributes.upper);
+        }
+    }
+
+    // <robot> <joint> <parent>
+    if (jointObject.parent?.[0]?.$?.link) {
         joint.parentName = jointObject.parent[0].$.link;
     } else {
-        throw new Error(`Joint ${jointObject.$?.name} has multiple parents, and requires only a single.`);
+        throw new Error(`Joint ${jointObject.$?.name} must have a parent.`);
     }
 
-    if (jointObject.child == undefined || jointObject.child.length == 0) {
-      throw new Error(`Joint ${jointObject.$?.name} must have a child.`);
-    } else if (jointObject.child.length == 1) {
+    // <robot> <joint> <child>
+    if (jointObject.child?.[0]?.$?.link) {
         joint.childName = jointObject.child[0].$.link;
     } else {
-        throw new Error(`Joint ${jointObject.$?.name} has multiple children, and requires only a single.`);
+        throw new Error(`Joint ${joint.name} must have a child.`);
     }
 
-    if (jointObject.origin && jointObject.origin.length == 1) {
-      if (jointObject.origin[0].$.xyz) {
-        joint.origin = Util.parseVector(jointObject.origin[0].$.xyz);
-      }
-      if (jointObject.origin[0].$.rpy) {
-        joint.rpy = Util.parseRPY(jointObject.origin[0].$.rpy);
-      }
+    // <robot> <joint> <origin>
+    if (jointObject.origin?.[0]?.$) {
+        const originAttributes = jointObject.origin[0].$;
+        if (originAttributes.xyz) {
+            joint.origin = Util.parseVector(originAttributes.xyz);
+        }
+        if (originAttributes.rpy) {
+            joint.rpy = Util.parseRPY(originAttributes.rpy);
+        }
     }
 
     return joint;
 }
 
-export async function deserializeUrdfToRobot(urdfString: string, robot: Robot) : Promise<Robot> {
+/**
+ * refer to https://wiki.ros.org/urdf/XML/robot
+ * @param urdfString 
+ * @param robot 
+ * @returns 
+ */
+export async function deserializeUrdfToRobot(urdfString: string, robot: Robot): Promise<Robot> {
     const urdf = await parseUrdf(urdfString);
 
-    robot.name = urdf.robot.$?.name;
-
-    if (urdf.robot.material instanceof Array) {
-      for (const material of urdf.robot.material) {
-        const m = deserializeMaterial(material, robot);
-        robot.materials.set(m.name, m);
-      }
+    // The root element in a robot description file must be a robot, with all other elements must be encapsulated within.
+    if (!urdf.robot) {
+        throw new Error("");
     }
 
-    if (urdf.robot.link instanceof Array) {
-      for (let link of urdf.robot.link) {
-        let l = await deserializeLink(link, robot);
-        if (robot.links.has(l.name)) {
-          throw new Error(`Robot already has ${l.name} please use another name for the second link.`);
-        } else {
-          robot.links.set(l.name, l);
+    robot.name = urdf.robot.$.name;
+    if (!robot.name) {
+        throw new Error("Robot element must have a name attribute.");
+    }
+
+    // material can be placed in root， and refered by name in the link visual
+    if (Array.isArray(urdf.robot.material)) {
+        for (const material of urdf.robot.material) {
+            const m = deserializeMaterial(material, robot);
+            robot.materialMap.set(m.name, m);
         }
-      }
     }
 
+    // <robot> <link>
+    if (Array.isArray(urdf.robot.link)) {
+        for (const link of urdf.robot.link) {
+            const l = await deserializeLink(link, robot);
+            if (robot.linkMap.has(l.name)) {
+                throw new Error(`Robot already has ${l.name} please use another name for the second link.`);
+            } else {
+                robot.linkMap.set(l.name, l);
+            }
+        }
+    }
+
+    // <robot> <joint>
     if (urdf.robot.joint instanceof Array) {
-      for (let joint of urdf.robot.joint) {
-        let j = await deserializeJoint(joint, robot);
-        robot.joints.set(j.name, j);
+        for (let joint of urdf.robot.joint) {
+            let j = await deserializeJoint(joint, robot);
+            if (robot.jointMap.has(j.name)) {
+                throw new Error(`Robot already has ${j.name} please use another name for the second joint.`);
+            } else {
+                robot.jointMap.set(j.name, j);
+            }
 
-        let p = robot.links.get(j.parentName);
-        if (p) {
-          j.parent = p;
-        } else {
-          throw new Error(`Joint ${j.name} has refered to a link ${j.parentName} which could not be found.`);
-        }
+            const parentLink = robot.linkMap.get(j.parentName);
+            if (parentLink) {
+                j.parent = parentLink;
+            } else {
+                throw new Error(`Joint ${j.name} has refered to a link ${j.parentName} which could not be found.`);
+            }
 
-        let c = robot.links.get(j.childName);
-        if (c) {
-          j.child = c;
-        } else {
-          throw new Error(`Joint ${j.name} has refered to a link ${j.childName} which could not be found.`);
+            const childLink = robot.linkMap.get(j.childName);
+            if (childLink) {
+                j.child = childLink;
+            } else {
+                throw new Error(`Joint ${j.name} has refered to a link ${j.childName} which could not be found.`);
+            }
         }
-      }
     }
 
     return robot;

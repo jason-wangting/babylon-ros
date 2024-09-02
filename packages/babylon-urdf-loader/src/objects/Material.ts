@@ -7,10 +7,14 @@ export class IMaterial {
     public color?: Color4;
     public material?: Material;
 
-    constructor( private robot: Robot ) {}
+    constructor(private robot: Robot) { }
 
+    /**
+     * material can refer to the materials defined in the root element via name
+     * @returns 
+     */
     public isReference(): boolean {
-        return this.filename === "" && this.color == undefined;
+        return !this.filename && !this.color;
     }
 
     public create(): void {

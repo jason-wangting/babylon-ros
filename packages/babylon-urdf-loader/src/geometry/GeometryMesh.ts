@@ -1,51 +1,18 @@
 import { IGeometry } from "./IGeometry";
-import { Vector3, AbstractMesh, TransformNode, Scene, IParticleSystem, Skeleton, SceneLoader } from '@babylonjs/core';
+import { Vector3, AbstractMesh, TransformNode, Scene, IParticleSystem, Skeleton, SceneLoader, Node } from '@babylonjs/core';
 import { IMaterial } from '../objects/Material';
 import { Robot } from "../objects/Robot";
 
-export class GeometryMesh implements IGeometry {
+export class GeometryMesh extends IGeometry {
 
-    public meshes?: AbstractMesh[];
-    public transform?: TransformNode;
-    public material?: IMaterial;
 
-    constructor(private robot: Robot, private uri: string, private scale: Vector3) {}
-    
-    private meshCallback(meshes : AbstractMesh[], particleSystems : IParticleSystem[] | undefined, skeletons : Skeleton[] | undefined) {
-        // Get a pointer to the mesh
-        if (meshes.length > 0 && this.transform) {
-            this.meshes = meshes;
-            this.meshes[0].parent = this.transform;
-            // find the top level bone in skeletons
-            if (skeletons && skeletons.length > 0) {
-                let rootBone = skeletons[0].bones.find(b => b.getParent() === undefined);
-                if (rootBone) {
-                    rootBone.returnToRest();
-                }
-            } else {
-
-                this.meshes.forEach(m => {
-                    if (this.transform) {
-                        m.addRotation(0, 0, Math.PI).addRotation(Math.PI/2, 0, 0);
-                        // Invert the left handed mesh to conform to the right handed coodinate system
-                        m.scaling = new Vector3(-1, 1, 1);
-                        m.parent = this.transform;
-                        
-                        if (this.material && this.material.material) {
-                            m.material = this.material.material;
-                        }
-                    }
-                });
-            }
-        }
+    constructor(private robot: Robot, private uri: string, private scale: Vector3) {
+        super();
     }
 
-
-    public create(mat?: IMaterial) : void {
-        this.transform = new TransformNode("mesh_mesh", this.robot.scene);
+    public async create(mat?: IMaterial) {
+        this.transform = new TransformNode("mesh_transform", this.robot.scene);
         this.transform.scaling = this.scale;
-
-        this.material = mat;
 
         let modelUri = this.uri;
         if (modelUri.startsWith("package://")) {
@@ -67,17 +34,47 @@ export class GeometryMesh implements IGeometry {
             const filename = modelUri.substring(modelUri.lastIndexOf('/') + 1);
             if (filename) {
                 const base = modelUri.substring(0, modelUri.lastIndexOf('/') + 1);
-                SceneLoader.ImportMesh(null, base, filename, this.robot.scene, this.meshCallback.bind(this));
+                const {
+                    meshes,
+                    skeletons,
+                    transformNodes
+                } = await SceneLoader.ImportMeshAsync(
+                    null,
+                    base,
+                    filename,
+                    this.robot.scene,
+                );
+
+                // set parent for root nodes
+                meshes.forEach(mesh => {
+                    if (!mesh.parent) mesh.parent = this.transform;
+                });
+                transformNodes.forEach(transform => {
+                    if (!transform.parent) transform.parent = this.transform;
+                });
+
+                if (skeletons.length > 0) {
+                    // find the top level bone in skeletons
+                    const rootBone = skeletons[0].bones.find(b => b.getParent() === undefined);
+                    if (rootBone) {
+                        rootBone.returnToRest();
+                    }
+                } else {
+                    meshes.forEach(m => {
+                        m.addRotation(0, 0, Math.PI).addRotation(Math.PI / 2, 0, 0);
+                        // Invert the left handed mesh to conform to the right handed coodinate system
+                        m.scaling = new Vector3(-1, 1, 1);
+
+                        // with not corrent dae loader
+                        // m.parent = this.transform;
+
+                        // ignore this?
+                        // if (mat && mat.material) {
+                        //     m.material = mat.material;
+                        // }
+                    });
+                }
             }
         }
-    }
-
-    public dispose(): void {
-        if (this.meshes) {
-            this.meshes.forEach(m => {
-                m.dispose();
-            });
-        }
-        this.transform?.dispose();
     }
 }

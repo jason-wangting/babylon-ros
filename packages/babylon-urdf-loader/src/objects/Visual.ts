@@ -13,29 +13,34 @@ export class Visual {
 
     public origin: Vector3 = new Vector3(0, 0, 0);
     public rpy: Vector3 = new Vector3(0, 0, 0);
-    public transform?: TransformNode;
+    /**
+     * root transform node of visual
+     */
+    public transform!: TransformNode;
 
-    constructor( private robot: Robot ) {}
+    constructor(private robot: Robot) { }
 
-    public create(): void {
+    public async create() {
 
         this.transform = new TransformNode(this.name, this.robot.scene);
         this.transform.position = this.origin;
         Util.applyRotationToTransform(this.transform, this.rpy);
 
+        // material is optional in the Visual
         let mat = this.material;
-        if (this.material != undefined) {
+        if (this.material) {
+            // material can refer to the materials in the robot root element.
             if (this.material.isReference()) {
-                mat = this.robot.materials.get(this.material.name);
+                mat = this.robot.materialMap.get(this.material.name);
             } else {
                 this.material.create();
             }
         }
 
-        if (this.geometry != undefined) {
-            this.geometry.create(mat);
+        if (this.geometry) {
+            await this.geometry.create(mat);
 
-            if (this.transform != undefined && this.geometry.transform != undefined) {
+            if (this.geometry.transform) {
                 this.geometry.transform.parent = this.transform;
             }
         }

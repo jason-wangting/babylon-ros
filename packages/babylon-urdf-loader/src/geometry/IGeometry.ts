@@ -1,10 +1,17 @@
 import { AbstractMesh, TransformNode, Scene } from "@babylonjs/core";
 import { IMaterial } from "../objects/Material";
 
-export interface IGeometry {
-    meshes?: AbstractMesh[];
-    transform?: TransformNode;
+export abstract class IGeometry {
+    meshes: AbstractMesh[] = [];
+    transform!: TransformNode;
 
-    create(mat?: IMaterial) : void;
-    dispose() : void;
+    async create(mat?: IMaterial) {};
+    dispose() {
+        if (this.meshes) {
+            this.meshes.forEach(m => {
+                m.dispose();
+            });
+        }
+        this.transform?.dispose();
+    }
 }

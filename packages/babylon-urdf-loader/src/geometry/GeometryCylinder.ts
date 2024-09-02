@@ -3,22 +3,16 @@ import { IGeometry } from "./IGeometry";
 import { IMaterial } from "../objects/Material";
 import { Robot } from "../objects/Robot";
 
-export class GeometryCylinder implements IGeometry {
-    public length : number = 0;
-    public radius : number = 0;
+export class GeometryCylinder extends IGeometry {
 
-    public meshes: AbstractMesh[] = [];
-    public transform?: TransformNode;
-
-    constructor(private robot: Robot, l : number, r: number) {
-        this.length = l;
-        this.radius = r;
+    constructor(private robot: Robot, private length: number = 0, private radius: number = 0) {
+        super();
     }
-    
-    public create(mat?: IMaterial) : void {
-        this.transform = new TransformNode("mesh_cylinder", this.robot.scene);
 
-        this.meshes.push(MeshBuilder.CreateCylinder("cylinder", 
+    public async create(mat?: IMaterial) {
+        this.transform = new TransformNode("cylinder-transform", this.robot.scene);
+
+        this.meshes.push(MeshBuilder.CreateCylinder("cylinder",
             {
                 diameter: this.radius * 2.0,
                 height: this.length
@@ -29,13 +23,5 @@ export class GeometryCylinder implements IGeometry {
         if (mat && mat.material) {
             this.meshes[0].material = mat.material;
         }
-     }
-    public dispose() : void {
-        if (this.meshes) {
-            this.meshes.forEach(m => {
-                m.dispose();
-            });
-        }
-        this.transform?.dispose();
     }
 }

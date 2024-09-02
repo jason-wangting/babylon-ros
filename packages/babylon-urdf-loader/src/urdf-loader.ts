@@ -33,19 +33,20 @@ export class URDFLoader implements ISceneLoaderPluginAsync{
         robot.filename = fileName || "";
         robot.rootUrl = rootUrl;
         await deserializeUrdfToRobot(data as string, robot);
-        robot.create();
+        await robot.create();
+        const { loadedMeshes, loadedTransformNodes, loadedSkeletons } = robot.getResult();
         return {
-            meshes: robot.loadedMeshes,
+            meshes: loadedMeshes,
             particleSystems: [],
-            skeletons: [],
+            skeletons: loadedSkeletons,
             animationGroups: [],
-            transformNodes: robot.loadedTransformNodes,
+            transformNodes: loadedTransformNodes,
             geometries: [],
             lights: [],
             spriteManagers: [],
         };
     }
-
+    
     /**
      * Load into a scene.     
      * custom babylon.js scene loader STANDARD interface
@@ -76,6 +77,33 @@ export class URDFLoader implements ISceneLoaderPluginAsync{
     async loadAssetContainerAsync(scene: Scene, data: unknown, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer> {
         console.log("loadAssetContainerAsync");
         const container = new AssetContainer(scene);
+        const {
+            meshes
+        } = await this.importMeshAsync(
+            null,
+            scene,
+            data,
+            rootUrl,
+            onProgress,
+            fileName
+        );
+        meshes.forEach(mesh => {
+            container.meshes.push(mesh);
+        });
+        meshes.forEach(mesh => {
+            const material = mesh.material;
+            if (material && container.materials.indexOf(material) === -1) {
+                container.materials.push(material);
+
+                // Textures
+                const textures = material.getActiveTextures();
+                textures.forEach(t => {
+                    if (container.textures.indexOf(t) === -1) {
+                        container.textures.push(t);
+                    }
+                })
+            }
+        });
         return container;
     }
 }
