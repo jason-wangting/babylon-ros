@@ -6,6 +6,8 @@
 
 # How to contribute
 
+> This project is powered by PNPM workspace.
+
 ```bash
 pnpm install
 ```
