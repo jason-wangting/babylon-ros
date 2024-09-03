@@ -1,0 +1,42 @@
+{
+  "name": "babylon-dae-loader",
+  "version": "0.1.0",
+  "description": "dae file loader for babylonjs",
+  "main": "dist/dae-loader.umd.js",
+  "module": "dist/dae-loader.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jason-wangting/babylon-ros.git"
+  },
+  "keywords": [
+    "babylon",
+    "babylonjs",
+    "dae",
+    "loader",
+    "robotics",
+    "ros"
+  ],
+  "author": "Jason Wang",
+  "license": "ISC",
+  "scripts": {
+    "dev": "nodemon --watch src --ext ts,tsx --ignore dist --exec \"pnpm run build\"",
+    "build": "vite build",
+    "prepublishOnly": "pnpm build",
+    "publish": "pnpm publish --registry https://registry.npmjs.org/"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2",
+    "vite-plugin-dts": "^4.0.3"
+  },
+  "peerDependencies": {
+    "@babylonjs/core": "^7.22.5"
+  },
+  "dependencies": {
+  }
+}

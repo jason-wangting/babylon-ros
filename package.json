@@ -7,8 +7,11 @@
     "urdf:dev": "pnpm --filter babylon-urdf-loader run dev",
     "urdf:build": "pnpm --filter babylon-urdf-loader run build",
     "urdf:publish": "pnpm --filter babylon-urdf-loader run publish",
+    "dae:dev": "pnpm --filter babylon-dae-loader run dev",
+    "dae:build": "pnpm --filter babylon-dae-loader run build",
+    "dae:publish": "pnpm --filter babylon-dae-loader run publish",
     "web:dev": "pnpm --filter web run dev",
-    "dev": "concurrently \"pnpm run urdf:dev\" \"pnpm run web:dev\""
+    "dev": "concurrently \"pnpm run urdf:dev\" \"pnpm run dae:dev\" \"pnpm run web:dev\""
   },
   "keywords": [],
   "author": "",
