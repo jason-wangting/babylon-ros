@@ -1,6 +1,3 @@
-import { promises as fs } from 'fs';
-import {RMXModelLoader} from "../model-loader"
-import {RMXModel} from "../model"
 import * as Utils from "./utils"
 import {Log, LogLevel, LogConsole, LogCallback, LogFilter} from "../log"
 import { VisualScene } from '../loader/visual_scene';
@@ -36,7 +33,7 @@ export class ColladaConverter {
         });
     }
 
-    convert(doc: LoaderDocument.Document): Document {
+    convert(doc: LoaderDocument.Document): Document | null{
         var context: ConverterContext = new ConverterContext(this.log, this.options);
 
         if (!doc) {
@@ -113,7 +110,7 @@ export class ColladaConverter {
             context.log.write("Collada document has no scene", LogLevel.Warning);
             return result;
         }
-        var scene: VisualScene = VisualScene.fromLink(doc.scene.instance, context);
+        var scene: VisualScene = VisualScene.fromLink(doc.scene.instance!, context)!;
         if (!scene) {
             context.log.write("Collada document has no scene", LogLevel.Warning);
             return result;
@@ -122,7 +119,7 @@ export class ColladaConverter {
         // Create converted nodes
         for (var i: number = 0; i < scene.children.length; ++i) {
             var topLevelNode: VisualSceneNode = scene.children[i];
-            result.push(Node.createNode(topLevelNode, null, context));
+            result.push(Node.createNode(topLevelNode, null as any, context));
         }
 
         // Create data (geometries, ...) for the converted nodes
@@ -186,10 +183,10 @@ export class ColladaConverter {
 
             if (context.options.useAnimationLabels.value === true) {
                 var labels: AnimationLabel[] = context.options.animationLabels.value;
-                var datas: AnimationData[] = AnimationData.createFromLabels(geometry.getSkeleton(), animation, labels, fps, context);
+                var datas: AnimationData[] = AnimationData.createFromLabels(geometry.getSkeleton()!, animation, labels, fps, context);
                 result = result.concat(datas);
             } else {
-                var data: AnimationData = AnimationData.create(geometry.getSkeleton(), animation, null, null, fps, context);
+                var data: AnimationData = AnimationData.create(geometry.getSkeleton()!, animation, null as any, null as any, fps, context);
                 if (data !== null) {
                     result.push(data);
                 }

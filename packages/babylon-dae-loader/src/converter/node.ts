@@ -3,14 +3,7 @@ import {Log, LogLevel} from "../log"
 
 
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
-import {Material} from "./material"
-import {Texture} from "./texture"
-import {Animation, AnimationTarget} from "./animation"
-import * as COLLADAContext from "../context"
-import {Options} from "./options"
-import {BoundingBox} from "./bounding_box"
-import * as BABYLON from 'babylonjs';
+import {Animation} from "./animation"
 import { InstanceController } from "../loader/instance_controller"
 import { InstanceGeometry } from "../loader/instance_geometry"
 import { NodeTransform } from "../loader/node_transform"
@@ -18,6 +11,7 @@ import { VisualSceneNode } from "../loader/visual_scene_node"
 import { ConverterContext } from "./context"
 import { Transform, TransformMatrix, TransformRotate, TransformTranslate, TransformScale } from "./transform"
 import {Geometry} from "./geometry"
+import { Matrix, Vector3 } from "@babylonjs/core"
 
     export class Node {
         name: string;
@@ -25,23 +19,23 @@ import {Geometry} from "./geometry"
         children: Node[];
         geometries: Geometry[];
         transformations: Transform[];
-        transformation_pre: BABYLON.Matrix = new BABYLON.Matrix();
-        transformation_post: BABYLON.Matrix = new BABYLON.Matrix();
-        matrix: BABYLON.Matrix = new BABYLON.Matrix();
-        worldMatrix: BABYLON.Matrix = new BABYLON.Matrix();
-        initialLocalMatrix: BABYLON.Matrix = new BABYLON.Matrix();
-        initialWorldMatrix: BABYLON.Matrix = new BABYLON.Matrix();
+        transformation_pre: Matrix = new Matrix();
+        transformation_post: Matrix = new Matrix();
+        matrix: Matrix = new Matrix();
+        worldMatrix: Matrix = new Matrix();
+        initialLocalMatrix: Matrix = new Matrix();
+        initialWorldMatrix: Matrix = new Matrix();
 
         constructor() {
             this.name = "";
             this.children = [];
             this.geometries = [];
             this.transformations = [];
-            this.transformation_pre = BABYLON.Matrix.Identity();
-            this.transformation_post = BABYLON.Matrix.Identity()
+            this.transformation_pre = Matrix.Identity();
+            this.transformation_post = Matrix.Identity()
         }
 
-        addTransform(mat: BABYLON.Matrix) {
+        addTransform(mat: Matrix) {
             var loader_transform = new NodeTransform();
             loader_transform.data = new Float32Array();
             mat.copyToArray(loader_transform.data);
@@ -54,7 +48,7 @@ import {Geometry} from "./geometry"
         /**
         * Returns the world transformation matrix of this node
         */
-        getWorldMatrix(context: ConverterContext): BABYLON.Matrix {
+        getWorldMatrix(context: ConverterContext): Matrix {
             if (this.parent != null) {
                 this.worldMatrix = this.parent.getWorldMatrix(context).multiply(this.getLocalMatrix(context));
             } else {
@@ -98,7 +92,7 @@ import {Geometry} from "./geometry"
         * Returns whether there exists any animation that targets the transformation of this node
         */
         isAnimated(recursive: boolean): boolean {
-            return this.isAnimatedBy(undefined, recursive);
+            return this.isAnimatedBy(undefined as unknown as any, recursive);
         }
 
         /**
@@ -155,7 +149,7 @@ import {Geometry} from "./geometry"
             // Node transform
             for (var i = 0; i < node.transformations.length; ++i) {
                 var transform: NodeTransform = node.transformations[i];
-                var converterTransform: Transform = null;
+                var converterTransform: Transform | null = null;
                 switch (transform.type) {
                     case "matrix":
                         converterTransform = new TransformMatrix(transform);
@@ -199,19 +193,19 @@ import {Geometry} from "./geometry"
 
         static createNodeData(converter_node: Node, context: ConverterContext) {
 
-            var collada_node: VisualSceneNode = context.nodes.findCollada(converter_node);
+            var collada_node: VisualSceneNode = context.nodes.findCollada(converter_node)!;
 
             // Static geometries (<instance_geometry>)
             for (var i: number = 0; i < collada_node.geometries.length; i++) {
                 var loaderGeometry: InstanceGeometry = collada_node.geometries[i];
-                var converterGeometry: Geometry = Geometry.createStatic(loaderGeometry, converter_node, context);
+                var converterGeometry: Geometry = Geometry.createStatic(loaderGeometry, converter_node, context)!;
                 converter_node.geometries.push(converterGeometry);
             }
 
             // Animated geometries (<instance_controller>)
             for (var i: number = 0; i < collada_node.controllers.length; i++) {
                 var loaderController: InstanceController = collada_node.controllers[i];
-                var converterGeometry: Geometry = Geometry.createAnimated(loaderController, converter_node, context);
+                var converterGeometry: Geometry = Geometry.createAnimated(loaderController, converter_node, context)!;
                 converter_node.geometries.push(converterGeometry);
             }
 
@@ -284,8 +278,8 @@ import {Geometry} from "./geometry"
                 result.forEach((element) => {
                     var world_matrix = element.node.getWorldMatrix(context);
                     if (context.options.worldTransformUnitScale) {
-                        var mat: BABYLON.Matrix = new BABYLON.Matrix()
-                        mat = BABYLON.Matrix.Invert(element.node.transformation_post);
+                        var mat: Matrix = new Matrix()
+                        mat = Matrix.Invert(element.node.transformation_post);
                         world_matrix = world_matrix.multiply(mat);
                     }
                     Geometry.transformGeometry(element.geometry, world_matrix, context);
@@ -295,7 +289,7 @@ import {Geometry} from "./geometry"
             // Merge all geometries
             if (context.options.singleGeometry) {
                 var geometries = result.map((element) => { return element.geometry });
-                var geometry: Geometry = Geometry.mergeGeometries(geometries, context);
+                var geometry: Geometry = Geometry.mergeGeometries(geometries, context)!;
                 return [geometry];
             } else {
                 return result.map((element) => { return element.geometry });
@@ -303,8 +297,8 @@ import {Geometry} from "./geometry"
         }
 
         static setupWorldTransform(node: Node, context: ConverterContext) {
-            var worldInvScale: BABYLON.Vector3 = Utils.getWorldInvScale(context);
-            var worldTransform: BABYLON.Matrix = Utils.getWorldTransform(context);
+            var worldInvScale: Vector3 = Utils.getWorldInvScale(context);
+            var worldTransform: Matrix = Utils.getWorldTransform(context);
 
             var uniform_scale: boolean = context.options.worldTransformUnitScale.value;
 
@@ -314,14 +308,14 @@ import {Geometry} from "./geometry"
             if (node.parent == null) {  
                 node.transformation_pre.copyFrom(worldTransform);
             } else if (uniform_scale) {
-                node.transformation_pre = BABYLON.Matrix.Invert(node.parent.transformation_post);
+                node.transformation_pre = Matrix.Invert(node.parent.transformation_post);
             }
 
             // Post-transformation
             if (uniform_scale) {
                 // This way, the node transformation will not contain any scaling
                 // Only the translation part will be scaled
-                node.transformation_post = BABYLON.Matrix.Scaling(worldInvScale.x, worldInvScale.y, worldInvScale.z);
+                node.transformation_post = Matrix.Scaling(worldInvScale.x, worldInvScale.y, worldInvScale.z);
             }
 
             Node.updateInitialMatrices(node, context);

@@ -1,21 +1,18 @@
-import {Context} from "../context"
 import {LogLevel} from "../log"
 
 
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
-import * as BABYLON from 'babylonjs';
 import {Node} from "./node"
 import { EElement } from "../loader/element";
 import { SidLink } from "../loader/link";
 import { VisualSceneNode } from "../loader/visual_scene_node";
 import { ConverterContext } from "./context";
+import { Matrix } from "@babylonjs/core";
 
     export class Bone {
         node: Node;
         name: string;
         parent: Bone | undefined;
-        invBindMatrix: BABYLON.Matrix = BABYLON.Matrix.Identity();
+        invBindMatrix: Matrix = Matrix.Identity();
         attachedToSkin: boolean;
 
         constructor(node: Node) {

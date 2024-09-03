@@ -1,20 +1,14 @@
 import {Context} from "../context"
 import {Log, LogLevel} from "../log"
 
-
-import * as Utils from "./utils"
 import * as MathUtils from "../math"
 import {Bone} from "./bone"
 import {Node} from "./node"
-import {Texture} from "./texture"
-import {AnimationTarget} from "./animation"
-import * as COLLADAContext from "../context"
-import {Options} from "./options"
-import {BoundingBox} from "./bounding_box"
-import * as BABYLON from 'babylonjs';
+
 import { Link } from "../loader/link"
 import { VisualSceneNode } from "../loader/visual_scene_node"
 import { ConverterContext } from "./context"
+import { Matrix } from "@babylonjs/core"
 
     export class Skeleton {
         /** All bones */
@@ -27,7 +21,7 @@ import { ConverterContext } from "./context"
         /**
         * In the given list, finds a bone that can be merged with the given bone
         */
-        static findBone(bones: Bone[], bone: Bone): Bone {
+        static findBone(bones: Bone[], bone: Bone): Bone | null {
             for (var i = 0; i < bones.length; ++i) {
                 if (Bone.safeToMerge(bones[i], bone)) {
                     return bones[i];
@@ -39,7 +33,7 @@ import { ConverterContext } from "./context"
         /**
         * Find the parent bone of the given bone
         */
-        static findParent(bones: Bone[], bone: Bone): Bone {
+        static findParent(bones: Bone[], bone: Bone): Bone | null {
             if (!bone.parent) {
                 return null;
             }
@@ -80,7 +74,7 @@ import { ConverterContext } from "./context"
         /**
         * Creates a skeleton from a skin
         */
-        static createFromSkin(jointSids: string[], skeletonRootNodes: VisualSceneNode[], bindShapeMatrix: BABYLON.Matrix,
+        static createFromSkin(jointSids: string[], skeletonRootNodes: VisualSceneNode[], bindShapeMatrix: Matrix,
             invBindMatrices: Float32Array, context: ConverterContext): Skeleton {
             var bones: Bone[] = [];
 
@@ -124,9 +118,9 @@ import { ConverterContext } from "./context"
         */
         static createFromNode(node: Node, context: ConverterContext): Skeleton {
             // Create a single node
-            var colladaNode: VisualSceneNode = context.nodes.findCollada(node);
+            var colladaNode: VisualSceneNode = context.nodes.findCollada(node)!;
             var bone: Bone = Bone.create(node);
-            bone.invBindMatrix = BABYLON.Matrix.Identity()
+            bone.invBindMatrix = Matrix.Identity()
             bone.attachedToSkin = true;
 
             var result = new Skeleton([bone]);
@@ -159,7 +153,7 @@ import { ConverterContext } from "./context"
             for (var i = 0; i < bones.length; ++i) {
                 if (Bone.safeToMerge(bones[i], bone)) {
                     var mergedBone = Bone.mergeBone(bones[i], bone);
-                    return Skeleton.replaceBone(bones, i, mergedBone);
+                    return Skeleton.replaceBone(bones, i, mergedBone!);
                 }
             }
 
@@ -167,7 +161,7 @@ import { ConverterContext } from "./context"
             var result = bones.slice(0);
             var newBone = bone.clone();
             result.push(newBone);
-            newBone.parent = Skeleton.findParent(result, newBone);
+            newBone.parent = Skeleton.findParent(result, newBone)!;
             return result;
         }
 
@@ -201,7 +195,7 @@ import { ConverterContext } from "./context"
             var skeletonRootNodes: VisualSceneNode[] = [];
             for (var i: number = 0; i < skeletonLinks.length; i++) {
                 var skeletonLink: Link = skeletonLinks[i];
-                var skeletonRootNode: VisualSceneNode = VisualSceneNode.fromLink(skeletonLink, context);
+                var skeletonRootNode: VisualSceneNode = VisualSceneNode.fromLink(skeletonLink, context)!;
                 if (!skeletonRootNode) {
                     context.log.write("Skeleton root node " + skeletonLink.getUrl() + " not found, skeleton root ignored", LogLevel.Warning);
                     continue;
@@ -300,8 +294,8 @@ import { ConverterContext } from "./context"
 
                 // Next, sort by previous position of parent
                 if (a.parent !== b.parent && a.parent !== null) {
-                    var ai = skeleton.bones.indexOf(a.parent);
-                    var bi = skeleton.bones.indexOf(b.parent);
+                    var ai = skeleton.bones.indexOf(a.parent!);
+                    var bi = skeleton.bones.indexOf(b.parent!);
                     return ai - bi;
                 }
 
@@ -330,7 +324,7 @@ import { ConverterContext } from "./context"
             bones.forEach((bone) => {
                 if (bone.parent !== null) {
                     var boneIndex = bones.indexOf(bone);
-                    var parentIndex = bones.indexOf(bone.parent);
+                    var parentIndex = bones.indexOf(bone.parent!);
                     if (boneIndex < parentIndex) {
                         ++errors;
                     }

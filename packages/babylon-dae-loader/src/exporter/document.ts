@@ -1,8 +1,8 @@
 import { DocumentJSON } from "./format";
 
     export class Document {
-        json: DocumentJSON;
-        data: Uint8Array;
+        json: DocumentJSON | null;
+        data: Uint8Array | null;
 
         constructor() {
             this.json = null;

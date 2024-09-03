@@ -1,24 +1,23 @@
+import { Material, Scene, VertexData, Texture, Color3, StandardMaterial, AbstractMesh, Bone, Matrix, Mesh, Skeleton } from "@babylonjs/core";
 import {Context} from "./context"
 import {LogLevel} from "./log"
 import * as Model from "./model"
 import * as ModelAnimation from "./model-animation"
 
 
-import * as BABYLON from 'babylonjs';
-
 /**
 * Converts a RMXModel into corresponding three.js objects
 */
 export class BabylonModelLoader {
 
-    private materialCache: { [hash: string]: BABYLON.Material };
+    private materialCache: { [hash: string]: Material };
 
     constructor() {
         this.materialCache = {};
     }
 
-    private createGeometry(chunk: Model.RMXModelChunk, scene : BABYLON.Scene): BABYLON.VertexData {
-        var vertexData = new BABYLON.VertexData();
+    private createGeometry(chunk: Model.RMXModelChunk, scene : Scene): VertexData {
+        var vertexData = new VertexData();
 
         if (chunk.data_position) {
             vertexData.positions = chunk.data_position;
@@ -49,27 +48,27 @@ export class BabylonModelLoader {
         return vertexData;
     }
 
-    private createTexture(url: string, scene : BABYLON.Scene): BABYLON.Texture {
+    private createTexture(url: string, scene : Scene): Texture {
         if ((url == null)  || (url == "")) {
-            return new BABYLON.Texture("", scene);
+            return new Texture("", scene);
         }
 
         // TODO Polyhobbyist
 
-        return new BABYLON.Texture(url, scene);
+        return new Texture(url, scene);
     }
 
-    private parseColor(color: string) : BABYLON.Color3 {
+    private parseColor(color: string) : Color3 {
         color = color.trim();
         var rgba = color.split(' ');
         if (rgba.length >= 3) {
             throw new Error("Color ${rgba} does not have 3 values")
         }
     
-        return new BABYLON.Color3(parseFloat(rgba[0]), parseFloat(rgba[1]), parseFloat(rgba[2]));
+        return new Color3(parseFloat(rgba[0]), parseFloat(rgba[1]), parseFloat(rgba[2]));
     }
 
-    private createMaterial(material: Model.RMXMaterial, skinned: boolean, scene : BABYLON.Scene): BABYLON.Material {
+    private createMaterial(material: Model.RMXMaterial, skinned: boolean, scene : Scene): Material {
         var prefix = skinned ? "skinned-" : "static-";
         var hash = prefix + material.hash();
         var cached_material = this.materialCache[hash];
@@ -77,7 +76,7 @@ export class BabylonModelLoader {
         if (cached_material) {
             return cached_material;
         } else {
-            var result = new BABYLON.StandardMaterial(hash, scene);
+            var result = new StandardMaterial(hash, scene);
             //result.skinning = skinned;
             if (material.diffuse) {
                 result.diffuseTexture = this.createTexture(material.diffuse, scene);
@@ -88,15 +87,15 @@ export class BabylonModelLoader {
             }
 
             if (material.diffuseColor != undefined && material.diffuseColor.length == 4) {
-                result.diffuseColor = new BABYLON.Color3(material.diffuseColor[0], material.diffuseColor[1], material.diffuseColor[2]);
+                result.diffuseColor = new Color3(material.diffuseColor[0], material.diffuseColor[1], material.diffuseColor[2]);
             }
 
             if (material.emissiveColor != undefined && material.emissiveColor.length == 4) {
-                result.emissiveColor = new BABYLON.Color3(material.emissiveColor[0], material.emissiveColor[1], material.emissiveColor[2]);
+                result.emissiveColor = new Color3(material.emissiveColor[0], material.emissiveColor[1], material.emissiveColor[2]);
             }
 
             if (material.specularColor != undefined && material.specularColor.length == 4) {
-                result.specularColor = new BABYLON.Color3(material.specularColor[0], material.specularColor[1], material.specularColor[2])
+                result.specularColor = new Color3(material.specularColor[0], material.specularColor[1], material.specularColor[2])
             }
 
             this.materialCache[hash] = result;
@@ -104,17 +103,17 @@ export class BabylonModelLoader {
         }
     }
 
-    createBabylonModel(model: Model.RMXModel, scene : BABYLON.Scene): BabylonModel {
+    createBabylonModel(model: Model.RMXModel, scene : Scene): BabylonModel {
         var result = new BabylonModel();
         var skinned = model.skeleton? true : false;
-        var bones : BABYLON.Bone[] = [];
+        var bones : Bone[] = [];
 
-        let rootMesh = new BABYLON.Mesh("", scene);
+        let rootMesh = new Mesh("", scene);
         result.meshes.push(rootMesh);
 
-       // Convert RMX skeleton to BABYLON.Skeleton
+       // Convert RMX skeleton to Skeleton
         if (model.skeleton) {
-            result.skeleton = new BABYLON.Skeleton("Skeleton", "", scene);
+            result.skeleton = new Skeleton("Skeleton", "", scene);
             for (var i = 0; i < model.skeleton.bones.length; ++i) {
                 var bone = model.skeleton.bones[i];
                 var parentBone = undefined;
@@ -122,9 +121,9 @@ export class BabylonModelLoader {
                     parentBone = bones[bone.parent];
                 }
 
-                let boneMatrix = BABYLON.Matrix.FromArray(bone.matrix);
+                let boneMatrix = Matrix.FromArray(bone.matrix!);
 
-                var babylon_bone = new BABYLON.Bone(bone.name, result.skeleton, parentBone, boneMatrix);
+                var babylon_bone = new Bone(bone.name, result.skeleton, parentBone, boneMatrix);
                 bones.push(babylon_bone);
             }
 
@@ -142,7 +141,7 @@ export class BabylonModelLoader {
             result.chunks.push(chunk);
 
             if (chunk.geometry) {
-                var m = new BABYLON.Mesh("", scene);
+                var m = new Mesh("", scene);
                 chunk.geometry.applyToMesh(m);
                 m.material = chunk.material;
                 m.parent = rootMesh;
@@ -151,8 +150,8 @@ export class BabylonModelLoader {
                 if (result.skeleton) {
                     // for each index in the bone index buffer, find the corresponding bone
                     // and add the mesh to the list of meshes that are influenced by that bone
-                    var bone_indices = rmx_chunk.data_boneindex;
-                    var bone_weights = rmx_chunk.data_boneweight;
+                    var bone_indices: any = rmx_chunk.data_boneindex;
+                    var bone_weights: any = rmx_chunk.data_boneweight;
                     var bone_count = bone_indices.length / 4;
                     for (var j = 0; j < bone_count; ++j) {
                         var bone_index = bone_indices[j * 4];
@@ -167,8 +166,8 @@ export class BabylonModelLoader {
             }
         }
 
-        result.skeleton.prepare();
-        result.skeleton.returnToRest();
+        result.skeleton!.prepare();
+        result.skeleton!.returnToRest();
         
 
         // Animation - use custom object
@@ -211,8 +210,8 @@ export class BabylonSkeleton {
 * Stores information about a piece of geometry
 */
 class BabylonModelChunk {
-    geometry: BABYLON.VertexData | undefined = undefined;
-    material: BABYLON.Material | undefined = undefined;
+    geometry: VertexData | undefined = undefined;
+    material: Material | undefined = undefined;
 
     constructor() {
     }
@@ -233,12 +232,12 @@ export class BabylonModelInstance {
 */
 export class BabylonModel {
     chunks: BabylonModelChunk[];
-    skeleton: BABYLON.Skeleton | undefined;
+    skeleton: Skeleton | undefined;
     animations: Model.RMXAnimation[];
-    static identityMatrix: BABYLON.Matrix = new BABYLON.Matrix();
+    static identityMatrix: Matrix = new Matrix();
 
 
-    meshes: BABYLON.AbstractMesh[] = [];
+    meshes: AbstractMesh[] = [];
 
     constructor() {
         this.chunks = [];

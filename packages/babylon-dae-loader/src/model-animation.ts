@@ -24,7 +24,7 @@ export class RMXPose {
 */
 export class RMXBoneMatrixTexture {
     size: number;
-    texture: WebGLTexture;
+    texture: WebGLTexture | null;
     data: Float32Array;
 
     /**

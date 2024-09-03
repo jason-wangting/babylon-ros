@@ -1,8 +1,6 @@
-import {Context} from "./context"
 import { LoaderContext } from "./loader/context";
 import {Log, LogLevel, LogConsole} from "./log"
 import {Document} from "./loader/document"
-import * as BABYLON from "babylonjs";
 
 
 export class ColladaLoader {
@@ -34,7 +32,7 @@ export class ColladaLoader {
 
         loadFromXML(id: string, doc: XMLDocument): Document {
             var context: LoaderContext = new LoaderContext(this.log);
-            return this._loadFromXML(id, doc, context);
+            return this._loadFromXML(id, doc, context)!;
         }
 
         private _loadFromXML(id: string, doc: XMLDocument, context: LoaderContext): Document | undefined {
@@ -42,7 +40,7 @@ export class ColladaLoader {
             try {
                 result = Document.parse(doc, context);
                 context.resolveAllLinks();
-            } catch (err) {
+            } catch (err: any) {
                 context.log.write(err.message + "\n" + err.stack, LogLevel.Exception);
                 context.log.write(err.message + "\n" + err.stack, LogLevel.Error);
                 this._reportError(id, context);

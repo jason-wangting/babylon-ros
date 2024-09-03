@@ -3,11 +3,11 @@ import {LogLevel} from "../log"
 import {Animation, AnimationTarget, AnimationTimeStatistics, Statistics} from "./animation"
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
-import * as BABYLON from "babylonjs";
 import { AnimationChannel } from "./animation_channel"
 import { ConverterContext } from "./context"
 import { Skeleton } from "./skeleton"
 import { Bone } from "./bone"
+import { Vector3, Quaternion, Matrix } from "@babylonjs/core"
 
     export interface AnimationLabel {
         name: string;
@@ -149,9 +149,9 @@ import { Bone } from "./bone"
             }
 
             // Process all keyframes
-            var pos = new BABYLON.Vector3();
-            var rot = new BABYLON.Quaternion();
-            var scl = new BABYLON.Vector3();
+            var pos = new Vector3();
+            var rot = new Quaternion();
+            var scl = new Vector3();
             for (var k: number = 0; k < keyframes; ++k) {
                 var time: number = start_time + k * spf;
 
@@ -169,7 +169,7 @@ import { Bone } from "./bone"
                     var bone: Bone = skeleton.bones[b];
                     var track: AnimationDataTrack = result_tracks[b];
 
-                    var mat: BABYLON.Matrix = bone.node.getLocalMatrix(context);
+                    var mat: Matrix = bone.node.getLocalMatrix(context);
                     mat.decompose(scl, rot, pos);
                     
                     if (track.pos !== null) {
@@ -199,12 +199,12 @@ import { Bone } from "./bone"
 
             // Remove unnecessary tracks
             var output_relative: boolean = false;
-            var pos0 = new BABYLON.Vector3()
-            var inv_pos0 = new BABYLON.Vector3()
-            var rot0 = new BABYLON.Quaternion();
-            var inv_rot0 = new BABYLON.Quaternion();
-            var scl0 = new BABYLON.Vector3()
-            var inv_scl0 = new BABYLON.Vector3()
+            var pos0 = new Vector3()
+            var inv_pos0 = new Vector3()
+            var rot0 = new Quaternion();
+            var inv_rot0 = new Quaternion();
+            var scl0 = new Vector3()
+            var inv_scl0 = new Vector3()
             for (var b: number = 0; b < skeleton.bones.length; ++b) {
                 var bone: Bone = skeleton.bones[b];
                 var track: AnimationDataTrack = result_tracks[b];

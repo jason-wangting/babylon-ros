@@ -23,14 +23,14 @@ import * as MaterialLoader from "../loader/material"
     }
 
     export class Material {
-        name: string;
-        diffuse: Texture;
-        specular: Texture;
-        normal: Texture;
+        name: string | null;
+        diffuse: Texture | null;
+        specular: Texture | null;
+        normal: Texture | null;
 
-        diffuseColor: number[] | undefined;
-        specularColor: number[] | undefined;
-        emissiveColor: number[] | undefined;
+        diffuseColor: number[] | null;
+        specularColor: number[] | null;
+        emissiveColor: number[] | null;
 
         constructor() {
             this.name = null;
@@ -43,37 +43,37 @@ import * as MaterialLoader from "../loader/material"
         }
 
         static createDefaultMaterial(context: ConverterContext): Material {
-            var result: Material = context.materials.findConverter(null);
+            var result: Material = context.materials.findConverter(null as unknown as any)!;
             if (result) {
                 return result;
             } else {
                 result = new Material();
-                context.materials.register(undefined, result);
+                context.materials.register(undefined as unknown as any, result);
                 return result;
             }
         }
 
         static createMaterial(instanceMaterial: InstanceMaterial, context: ConverterContext): Material {
 
-            var material = MaterialLoader.Material.fromLink(instanceMaterial.material, context);
+            var material = MaterialLoader.Material.fromLink(instanceMaterial.material!, context);
             if (!material) {
                 context.log.write("Material not found, material skipped.", LogLevel.Warning);
                 return Material.createDefaultMaterial(context);
             }
 
-            var effect: Effect = Effect.fromLink(material.effect, context);
+            var effect: Effect = Effect.fromLink(material.effect!, context)!;
             if (!effect) {
                 context.log.write("Material effect not found, using default material", LogLevel.Warning);
                 return Material.createDefaultMaterial(context);
             }
 
-            var technique: EffectTechnique = effect.technique;
+            var technique: EffectTechnique = effect.technique!;
             if (!technique) {
                 context.log.write("Material effect not found, using default material", LogLevel.Warning);
                 return Material.createDefaultMaterial(context);
             }
 
-            var result: Material = context.materials.findConverter(material);
+            var result: Material = context.materials.findConverter(material)!;
             if (result) return result;
 
             result = new Material();
@@ -82,14 +82,14 @@ import * as MaterialLoader from "../loader/material"
                 // convert Float32Array to number[]
                 result.diffuseColor = Array.prototype.slice.call(technique.diffuse.color);
             } else {
-                result.diffuse = Texture.createTexture(technique.diffuse, context);
+                result.diffuse = Texture.createTexture(technique.diffuse!, context)!;
 
             }
 
             if (technique.specular != undefined && technique.specular.color != undefined) {
                 result.specularColor = Array.prototype.slice.call(technique.specular.color);
             } else {
-                result.specular = Texture.createTexture(technique.specular, context);
+                result.specular = Texture.createTexture(technique.specular!, context)!;
             }
 
             if (technique.emission != undefined && technique.emission.color != undefined) {
@@ -97,7 +97,7 @@ import * as MaterialLoader from "../loader/material"
             }
 
 
-            result.normal = Texture.createTexture(technique.bump, context);
+            result.normal = Texture.createTexture(technique.bump!, context)!;
             context.materials.register(material, result);
 
             return result;

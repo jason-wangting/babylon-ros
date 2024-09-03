@@ -5,17 +5,13 @@ import * as SourceLoader from "../loader/source"
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
 import {Material} from "./material"
-import {Texture} from "./texture"
-import {AnimationTarget} from "./animation"
-import * as COLLADAContext from "../context"
-import {Options} from "./options"
 import {BoundingBox} from "./bounding_box"
-import * as BABYLON from 'babylonjs';
 import { Input } from "../loader/input"
 import { Triangles } from "../loader/triangles"
 import { Vertices } from "../loader/vertices"
 import * as LoaderGeometry from "../loader/geometry"
 import { ConverterContext } from "./context"
+import { Matrix, Vector3 } from "@babylonjs/core"
 
     export class GeometryData {
         indices: Uint32Array = new Uint32Array();
@@ -50,7 +46,7 @@ import { ConverterContext } from "./context"
         public material: Material = new Material();
         public boundingBox: BoundingBox= new BoundingBox();;
         /** Bind shape matrix (skinned geometry only) */
-        public bindShapeMatrix: BABYLON.Matrix = new BABYLON.Matrix();
+        public bindShapeMatrix: Matrix = new Matrix();
         /** Backup of the original COLLADA indices, for internal use only */
         public _colladaIndices: GeometryChunkSourceIndices = new GeometryChunkSourceIndices();
 
@@ -143,13 +139,13 @@ import { ConverterContext } from "./context"
             var srcVertTexcoord = inputVertTexcoord.map((x: Input) => SourceLoader.Source.fromLink(x != null ? x.source : undefined, context));
 
             // Raw data
-            var dataVertPos: Float32Array = Utils.createFloatArray(srcVertPos, "vertex position", 3, context);
-            var dataVertNormal: Float32Array = Utils.createFloatArray(srcVertNormal, "vertex normal", 3, context);
-            var dataTriNormal: Float32Array = Utils.createFloatArray(srcTriNormal, "vertex normal (indexed)", 3, context);
-            var dataVertColor: Float32Array = Utils.createFloatArray(srcVertColor, "vertex color", 4, context);
-            var dataTriColor: Float32Array = Utils.createFloatArray(srcTriColor, "vertex color (indexed)", 4, context);
-            var dataVertTexcoord: Float32Array[] = srcVertTexcoord.map((x) => Utils.createFloatArray(x, "texture coordinate", 2, context));
-            var dataTriTexcoord: Float32Array[] = srcTriTexcoord.map((x) => Utils.createFloatArray(x, "texture coordinate (indexed)", 2, context));
+            var dataVertPos: Float32Array = Utils.createFloatArray(srcVertPos, "vertex position", 3, context)!;
+            var dataVertNormal: Float32Array = Utils.createFloatArray(srcVertNormal!, "vertex normal", 3, context)!;
+            var dataTriNormal: Float32Array = Utils.createFloatArray(srcTriNormal!, "vertex normal (indexed)", 3, context)!;
+            var dataVertColor: Float32Array = Utils.createFloatArray(srcVertColor!, "vertex color", 4, context)!;
+            var dataTriColor: Float32Array = Utils.createFloatArray(srcTriColor!, "vertex color (indexed)", 4, context)!;
+            var dataVertTexcoord: Float32Array[] = srcVertTexcoord.map((x) => Utils.createFloatArray(x!, "texture coordinate", 2, context)) as any;
+            var dataTriTexcoord: Float32Array[] = srcTriTexcoord.map((x) => Utils.createFloatArray(x!, "texture coordinate (indexed)", 2, context)) as any;
 
             // Make sure the geometry only contains triangles
             if (triangles.type !== "triangles") {
@@ -205,7 +201,7 @@ import { ConverterContext } from "./context"
             if (dataVertNormal !== null) {
                 Utils.reIndex(dataVertNormal, colladaIndices, triangleVertexStride, indexOffsetPosition, 3, normal, indices, 1, 0, 3);
             } else if (dataTriNormal !== null) {
-                Utils.reIndex(dataTriNormal, colladaIndices, triangleVertexStride, indexOffsetNormal, 3, normal, indices, 1, 0, 3);
+                Utils.reIndex(dataTriNormal, colladaIndices, triangleVertexStride, indexOffsetNormal!, 3, normal, indices, 1, 0, 3);
             } else {
                 context.log.write("Geometry " + geometry.id + " has no normal data, using zero vectors", LogLevel.Warning);
             }
@@ -216,7 +212,7 @@ import { ConverterContext } from "./context"
             if (dataVertTexcoord.length > 0) {
                 Utils.reIndex(dataVertTexcoord[0], colladaIndices, triangleVertexStride, indexOffsetPosition, 2, texcoord, indices, 1, 0, 2);
             } else if (dataTriTexcoord.length > 0) {
-                Utils.reIndex(dataTriTexcoord[0], colladaIndices, triangleVertexStride, indexOffsetTexcoord, 2, texcoord, indices, 1, 0, 2);
+                Utils.reIndex(dataTriTexcoord[0], colladaIndices, triangleVertexStride, indexOffsetTexcoord!, 2, texcoord, indices, 1, 0, 2);
             } else {
                 context.log.write("Geometry " + geometry.id + " has no texture coordinate data, using zero vectors", LogLevel.Warning);
             }
@@ -254,12 +250,12 @@ import { ConverterContext } from "./context"
         }
 
 
-        static transformEachVector(position: Float32Array, transform: BABYLON.Matrix) {
-            let vec = new BABYLON.Vector3();
+        static transformEachVector(position: Float32Array, transform: Matrix) {
+            let vec = new Vector3();
             for (let i = 0; i < position.length; i += 3) {
                 vec.set(position[i], position[i + 1], position[i + 2]);
 
-                BABYLON.Vector3.TransformCoordinates(vec, transform);
+                Vector3.TransformCoordinates(vec, transform);
 
                 position[i] = vec.x;
                 position[i + 1] = vec.y;
@@ -270,7 +266,7 @@ import { ConverterContext } from "./context"
         /**
         * Transforms the positions and normals of the given Chunk by the given matrices
         */
-        static transformChunk(chunk: GeometryChunk, positionMatrix: BABYLON.Matrix, normalMatrix: BABYLON.Matrix, context: ConverterContext) {
+        static transformChunk(chunk: GeometryChunk, positionMatrix: Matrix, normalMatrix: Matrix, context: ConverterContext) {
             var position: Float32Array = chunk.data.position;
             if (position !== null) {
                 GeometryChunk.transformEachVector(position, positionMatrix);

@@ -8,7 +8,6 @@ import {Material, MaterialMap} from "./material"
 import {Texture} from "./texture"
 import {AnimationTarget} from "./animation"
 import * as COLLADAContext from "../context"
-import * as BABYLON from "babylonjs"
 import {Options} from "./options"
 import {BoundingBox} from "./bounding_box"
 import { Controller } from "../loader/controller"
@@ -26,6 +25,7 @@ import { ConverterContext } from "./context"
 import { Node } from "./node"
 import { GeometryChunk, GeometryData, GeometryChunkSourceIndices } from "./geometry_chunk"
 import * as LoaderGeometry from "../loader/geometry"
+import { Matrix } from "@babylonjs/core"
 
     export class Geometry {
         name: string;
@@ -147,7 +147,7 @@ import * as LoaderGeometry from "../loader/geometry"
             var jointSids: string[] = <string[]>jointsSource.data;
 
             // Bind shape matrix
-            var bindShapeMatrix: BABYLON.Matrix = new BABYLON.Matrix();
+            var bindShapeMatrix: Matrix = new Matrix();
             if (skin.bindShapeMatrix !== null) {
                 MathUtils.mat4Extract(skin.bindShapeMatrix, 0, bindShapeMatrix);
             }
@@ -238,7 +238,7 @@ import * as LoaderGeometry from "../loader/geometry"
             // Copy bind shape matrices
             for (var i = 0; i < geometry.chunks.length; ++i) {
                 var chunk: GeometryChunk = geometry.chunks[i];
-                chunk.bindShapeMatrix = new BABYLON.Matrix();
+                chunk.bindShapeMatrix = new Matrix();
                 chunk.bindShapeMatrix.copyFrom(bindShapeMatrix);
             }
 
@@ -382,9 +382,9 @@ import * as LoaderGeometry from "../loader/geometry"
         /**
         * Transforms the given geometry (position and normals) by the given matrix
         */
-        static transformGeometry(geometry: Geometry, transformMatrix: BABYLON.Matrix, context: ConverterContext) {
+        static transformGeometry(geometry: Geometry, transformMatrix: Matrix, context: ConverterContext) {
             // Create the normal transformation matrix
-            var normalMatrix: BABYLON.Matrix = new BABYLON.Matrix;
+            var normalMatrix: Matrix = new Matrix;
             transformMatrix.toNormalMatrix(normalMatrix);
 
             // Transform normals and positions of all chunks
@@ -413,7 +413,7 @@ import * as LoaderGeometry from "../loader/geometry"
 
                 // Transformation B (the post-transformation of the corresponding node)
                 if (context.options.worldTransformUnitScale) {
-                    var mat = BABYLON.Matrix.Invert(bone.node.transformation_post);
+                    var mat = Matrix.Invert(bone.node.transformation_post);
                     bone.invBindMatrix = mat.multiply(bone.invBindMatrix);
                 }
             });
@@ -429,7 +429,7 @@ import * as LoaderGeometry from "../loader/geometry"
             }
 
             if (geometry.skeleton && geometry.skeleton.bones) {
-                geometry.skeleton.bones.forEach((bone) => {
+                geometry.skeleton.bones.forEach((bone: any) => {
                     bone.invBindMatrix[12] *= scale;
                     bone.invBindMatrix[13] *= scale;
                     bone.invBindMatrix[14] *= scale;
@@ -448,16 +448,16 @@ import * as LoaderGeometry from "../loader/geometry"
             for (var i = 0; i < geometry.chunks.length; ++i) {
                 var chunk: GeometryChunk = geometry.chunks[i];
 
-                var bindShapeMatrix: BABYLON.Matrix = chunk.bindShapeMatrix;
+                var bindShapeMatrix: Matrix = chunk.bindShapeMatrix;
                 if (bindShapeMatrix) {
-                    var normalMatrix: BABYLON.Matrix = new BABYLON.Matrix();
+                    var normalMatrix: Matrix = new Matrix();
                     bindShapeMatrix.toNormalMatrix(normalMatrix);
 
                     // Pre-multiply geometry data by the bind shape matrix
                     GeometryChunk.transformChunk(chunk, bindShapeMatrix, normalMatrix, context);
 
                     // Reset the bind shape matrix
-                    chunk.bindShapeMatrix = BABYLON.Matrix.Identity();
+                    chunk.bindShapeMatrix = Matrix.Identity();
                 }
             }
         }
@@ -526,7 +526,7 @@ import * as LoaderGeometry from "../loader/geometry"
             var skeleton = new Skeleton([]);
             geometries.forEach((g) => {
                 if (g.skeleton !== null) {
-                    skeleton = Skeleton.mergeSkeletons(skeleton, g.skeleton, context);
+                    skeleton = Skeleton.mergeSkeletons(skeleton, g.skeleton!, context);
                 }
             });
 

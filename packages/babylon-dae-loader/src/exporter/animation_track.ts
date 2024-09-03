@@ -1,7 +1,4 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
+
 import { AnimationDataTrack } from "../converter/animation_data";
 import { ExporterContext } from "./context";
 import { DataChunk } from "./data_chunk";
@@ -9,7 +6,7 @@ import { AnimationTrackJSON } from "./format";
 
     export class AnimationTrack {
 
-        static toJSON(track: AnimationDataTrack, index: number, context: ExporterContext): AnimationTrackJSON {
+        static toJSON(track: AnimationDataTrack, index: number, context: ExporterContext): AnimationTrackJSON | null {
             if (!track) {
                 return null;
             }

@@ -34,14 +34,14 @@ import { Image } from "../loader/image"
             this.converter.push(converter);
         }
 
-        findConverter(collada: ColladaType): ConverterType {
+        findConverter(collada: ColladaType): ConverterType | null {
             for (var i: number = 0; i < this.collada.length; ++i) {
                 if (this.collada[i] === collada) return this.converter[i];
             }
             return null;
         }
 
-        findCollada(converter: ConverterType): ColladaType {
+        findCollada(converter: ConverterType): ColladaType | null {
             for (var i: number = 0; i < this.collada.length; ++i) {
                 if (this.converter[i] === converter) return this.collada[i];
             }

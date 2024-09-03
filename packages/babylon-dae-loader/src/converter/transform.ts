@@ -1,16 +1,8 @@
-import {Log, LogLevel} from "../log"
+import { Matrix, Vector3 } from "@babylonjs/core"
 import { NodeTransform } from "../loader/node_transform"
 
-
-import * as Utils from "./utils"
 import * as MathUtils from "../math"
-import {Bone} from "./bone"
-import {Texture} from "./texture"
 import {Animation, AnimationTarget} from "./animation"
-import * as COLLADAContext from "../context"
-import {Options} from "./options"
-import {BoundingBox} from "./bounding_box"
-import * as BABYLON from 'babylonjs';
 import { AnimationChannel } from "./animation_channel"
 import { ConverterContext } from "./context"
 
@@ -36,8 +28,8 @@ import { ConverterContext } from "./context"
             this.data = new Float32Array(data_elements);
             this.original_data = new Float32Array(data_elements);
             for (var i = 0; i < data_elements; ++i) {
-                this.data[i] = transform.data[i];
-                this.original_data[i] = transform.data[i];
+                this.data[i] = transform.data![i];
+                this.original_data[i] = transform.data![i];
             }
         }
         getTargetDataRows(): number {
@@ -75,7 +67,7 @@ import { ConverterContext } from "./context"
             }
             this.updateFromData();
         }
-        applyTransformation(mat: BABYLON.Matrix) {
+        applyTransformation(mat: Matrix) {
             throw new Error("Not implemented");
         }
         updateFromData() {
@@ -87,16 +79,16 @@ import { ConverterContext } from "./context"
     }
 
     export class TransformMatrix extends Transform implements AnimationTarget {
-        matrix: BABYLON.Matrix;
+        matrix: Matrix;
         constructor(transform: NodeTransform) {
             super(transform, 4, 4);
-            this.matrix = new BABYLON.Matrix();
+            this.matrix = new Matrix();
             this.updateFromData();
         }
         updateFromData() {
             MathUtils.mat4Extract(this.data, 0, this.matrix);
         }
-        applyTransformation(mat: BABYLON.Matrix) {
+        applyTransformation(mat: Matrix) {
             mat.copyFrom(mat.multiply(this.matrix));
         }
         hasTransformType(type: TransformType): boolean {
@@ -106,12 +98,12 @@ import { ConverterContext } from "./context"
 
     export class TransformRotate extends Transform implements AnimationTarget {
         /** Source data: axis */
-        axis: BABYLON.Vector3 = new BABYLON.Vector3;
+        axis: Vector3 = new Vector3;
         /** Source data: angle */
         radians: number;
         constructor(transform: NodeTransform) {
             super(transform, 4, 1);
-            this.axis = new BABYLON.Vector3;
+            this.axis = new Vector3;
             this.radians = 0;
             this.updateFromData();
         }
@@ -119,8 +111,8 @@ import { ConverterContext } from "./context"
             this.axis.set(this.data[0], this.data[1], this.data[2]);
             this.radians = this.data[3] / 180 * Math.PI;
         }
-        applyTransformation(mat: BABYLON.Matrix) {
-            let t = BABYLON.Matrix.RotationAxis(this.axis, this.radians);
+        applyTransformation(mat: Matrix) {
+            let t = Matrix.RotationAxis(this.axis, this.radians);
             mat.copyFrom(mat.multiply(t));
         }
         hasTransformType(type: TransformType): boolean {
@@ -130,7 +122,7 @@ import { ConverterContext } from "./context"
 
     export class TransformTranslate extends Transform implements AnimationTarget {
         /** Source data: translation */
-        pos: BABYLON.Vector3 = new BABYLON.Vector3();
+        pos: Vector3 = new Vector3();
         constructor(transform: NodeTransform) {
             super(transform, 3, 1);
             this.updateFromData();
@@ -138,8 +130,8 @@ import { ConverterContext } from "./context"
         updateFromData() {
             this.pos.set(this.data[0], this.data[1], this.data[2]);
         }
-        applyTransformation(mat: BABYLON.Matrix) {
-            let t = BABYLON.Matrix.Translation(this.pos.x, this.pos.y, this.pos.z);
+        applyTransformation(mat: Matrix) {
+            let t = Matrix.Translation(this.pos.x, this.pos.y, this.pos.z);
             mat.copyFrom(mat.multiply(t));
         }
         hasTransformType(type: TransformType): boolean {
@@ -149,7 +141,7 @@ import { ConverterContext } from "./context"
 
     export class TransformScale extends Transform implements AnimationTarget {
         /** Source data: scaling */
-        scl: BABYLON.Vector3 = new BABYLON.Vector3();
+        scl: Vector3 = new Vector3();
         constructor(transform: NodeTransform) {
             super(transform, 3, 1);
             this.updateFromData();
@@ -157,8 +149,8 @@ import { ConverterContext } from "./context"
         updateFromData() {
             this.scl.set(this.data[0], this.data[1], this.data[2]);
         }
-        applyTransformation(mat: BABYLON.Matrix) {
-            let t = BABYLON.Matrix.Scaling(this.scl.x, this.scl.y, this.scl.z);
+        applyTransformation(mat: Matrix) {
+            let t = Matrix.Scaling(this.scl.x, this.scl.y, this.scl.z);
             mat.copyFrom(mat.multiply(t))
         }
         hasTransformType(type: TransformType): boolean {

@@ -1,6 +1,4 @@
-import * as BABYLON from 'babylonjs';
-
-
+import { Vector3, Quaternion } from "@babylonjs/core";
 
 /**
 * A skinned mesh with an animation
@@ -29,12 +27,12 @@ export class RMXModelChunk {
     vertex_count: number;
     material_index: number;
 
-    data_position: Float32Array | undefined;
-    data_normal: Float32Array | undefined;
-    data_texcoord: Float32Array | undefined;
-    data_boneweight: Float32Array | undefined;
-    data_boneindex: Uint8Array | undefined;
-    data_indices: Uint32Array | undefined;
+    data_position: Float32Array | null | undefined;
+    data_normal: Float32Array | undefined | null;
+    data_texcoord: Float32Array | undefined | null;
+    data_boneweight: Float32Array | undefined | null;
+    data_boneindex: Uint8Array | undefined | null;
+    data_indices: Uint32Array | undefined | null;
 
     constructor() {
         this.name = "";
@@ -92,11 +90,11 @@ export class RMXBone {
 
     matrix: Float32Array | undefined;
     /** Rest pose position (3D vector) */
-    pos: BABYLON.Vector3 = new BABYLON.Vector3();
+    pos: Vector3 = new Vector3();
     /** Rest pose rotation (quaternion) */
-    rot: BABYLON.Quaternion = new BABYLON.Quaternion();
+    rot: Quaternion = new Quaternion();
     /** Rest pose scale (3D vector) */
-    scl: BABYLON.Vector3 = new BABYLON.Vector3();
+    scl: Vector3 = new Vector3();
 }
 
 /**

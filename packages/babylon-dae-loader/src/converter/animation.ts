@@ -66,12 +66,12 @@ import * as LoaderAnimation from '../loader/animation';
             }
         }
 
-        private compute(fn: (data:number[])=>number) {
+        private compute(fn: (data:number[])=>number): number {
             if (this.data.length > 0) {
                 this.sort();
                 return fn(this.data);
             } else {
-                return null;
+                return null as unknown as number;
             }
         }
 
@@ -111,8 +111,8 @@ import * as LoaderAnimation from '../loader/animation';
         channels: AnimationChannel[];
 
         constructor() {
-            this.id = null;
-            this.name = null;
+            this.id = null as any;
+            this.name = null as any;
             this.channels = [];
         }
 
@@ -129,7 +129,7 @@ import * as LoaderAnimation from '../loader/animation';
         static addChannelsToAnimation(collada_animation: LoaderAnimation.Animation, converter_animation: Animation, context: ConverterContext) {
             // Channels
             for (var i: number = 0; i < collada_animation.channels.length; ++i) {
-                var channel: AnimationChannel = AnimationChannel.create(collada_animation.channels[i], context);
+                var channel: AnimationChannel = AnimationChannel.create(collada_animation.channels[i], context)!;
                 converter_animation.channels.push(channel);
             }
 

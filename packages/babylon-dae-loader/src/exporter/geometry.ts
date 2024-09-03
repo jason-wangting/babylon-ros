@@ -9,8 +9,8 @@ import { DataChunk } from "./data_chunk";
 import * as ConverterBoundingBox from "../converter/bounding_box";
 
     export class BoundingBox {
-
-        static toJSON(box: ConverterBoundingBox.BoundingBox): BoundingBoxJSON {
+//static toJSON(box: ConverterBoundingBox.BoundingBox): BoundingBoxJSON {
+        static toJSON(box: any): BoundingBoxJSON {
             if (!box) {
                 return {
                     min: [0, 0, 0],

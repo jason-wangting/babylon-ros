@@ -30,14 +30,14 @@ import { Sampler } from "../loader/sampler"
         dataCount: number;
 
         constructor() {
-            this.target = null;
-            this.interpolation = null;
-            this.input = null;
-            this.output = null;
-            this.inTangent = null;
-            this.outTangent = null;
-            this.dataOffset = null;
-            this.dataCount = null;
+            this.target = null as any;
+            this.interpolation = null as any;
+            this.input = null as any;
+            this.output = null as any;
+            this.inTangent = null as any;
+            this.outTangent = null as any;
+            this.dataOffset = null as any;
+            this.dataCount = null as any;
         }
 
         // TODO: This is the most expensive function in the whole project. Use a binary search or find out why it's so slow.
@@ -82,14 +82,14 @@ import { Sampler } from "../loader/sampler"
             return { i0: 0, i1: 1 };
         }
 
-        static createInputData(input: Input, inputName: string, dataDim: number, context: ConverterContext): Float32Array {
+        static createInputData(input: Input, inputName: string, dataDim: number, context: ConverterContext): Float32Array | null {
             // Input
             if (!input) {
                 return null;
             }
 
             // Source
-            var source: SourceLoader.Source = SourceLoader.Source.fromLink(input.source, context);
+            var source: SourceLoader.Source = SourceLoader.Source.fromLink(input.source, context)!;
             if (!source) {
                 context.log.write("Animation channel has no " + inputName + " input data, data ignored", LogLevel.Warning);
                 return null;
@@ -103,7 +103,7 @@ import { Sampler } from "../loader/sampler"
             return Utils.createFloatArray(source, inputName, dataDim, context);
         }
 
-        static createInputDataFromArray(inputs: Input[], inputName: string, dataDim: number, context: ConverterContext): Float32Array {
+        static createInputDataFromArray(inputs: Input[], inputName: string, dataDim: number, context: ConverterContext): Float32Array | null {
             // Samplers can have more than one output if they describe multiple curves at once.
             // I don't understand from the spec how a single channel could describe the animation of multiple parameters,
             // since each channel references a single SID target
@@ -117,28 +117,28 @@ import { Sampler } from "../loader/sampler"
             }
         }
 
-        static create(channel: Channel, context: ConverterContext): AnimationChannel {
+        static create(channel: Channel, context: ConverterContext): AnimationChannel | null {
             var result: AnimationChannel = new AnimationChannel();
 
             // Element
-            var element: EElement = EElement.fromLink(channel.target, context);
+            var element: EElement = EElement.fromLink(channel.target!, context)!;
             if (!element) {
-                context.log.write("Animation channel has an invalid target '" + channel.target.url + "', animation ignored", LogLevel.Warning);
+                context.log.write("Animation channel has an invalid target '" + channel.target!.url + "', animation ignored", LogLevel.Warning);
                 return null;
             }
 
             // Target
-            var target: AnimationTarget = context.animationTargets.findConverter(element);
+            var target: AnimationTarget = context.animationTargets.findConverter(element)!;
             if (!target) {
-                context.log.write("Animation channel has no converter target '" + channel.target.url + "', animation ignored", LogLevel.Warning);
+                context.log.write("Animation channel has no converter target '" + channel.target!.url + "', animation ignored", LogLevel.Warning);
                 return null;
             }
             result.target = target;
 
             // Sampler
-            var sampler: Sampler = Sampler.fromLink(channel.source, context);
+            var sampler: Sampler = Sampler.fromLink(channel.source!, context)!;
             if (!sampler) {
-                context.log.write("Animation channel has an invalid sampler '" + channel.source.url + "', animation ignored", LogLevel.Warning);
+                context.log.write("Animation channel has an invalid sampler '" + channel.source!.url + "', animation ignored", LogLevel.Warning);
                 return null;
             }
 
@@ -148,7 +148,7 @@ import { Sampler } from "../loader/sampler"
             var targetDataDim: number = targetDataRows * targetDataColumns;
 
             // Destination data offset and count
-            var targetLink: SidLink = channel.target;
+            var targetLink: SidLink = channel.target!;
             if (targetLink.dotSyntax) {
                 // Member syntax: single named element
                 result.dataCount = 1;
@@ -199,7 +199,7 @@ import { Sampler } from "../loader/sampler"
                         context.log.write("Unknown semantic for '" + targetLink.url + "', animation ignored", LogLevel.Warning);
                         return null;
                 }
-            } else if (channel.target.arrSyntax) {
+            } else if (channel.target!.arrSyntax) {
                 // Array syntax: single element at a given index
                 result.dataCount = 1;
                 switch (targetLink.indices.length) {
@@ -221,10 +221,10 @@ import { Sampler } from "../loader/sampler"
 
 
             // Interpolation data
-            result.input = AnimationChannel.createInputData(sampler.input, "input", 1, context);
-            result.output = AnimationChannel.createInputDataFromArray(sampler.outputs, "output", result.dataCount, context);
-            result.inTangent = AnimationChannel.createInputDataFromArray(sampler.inTangents, "intangent", result.dataCount + 1, context);
-            result.outTangent = AnimationChannel.createInputDataFromArray(sampler.outTangents, "outtangent", result.dataCount + 1, context);
+            result.input = AnimationChannel.createInputData(sampler.input!, "input", 1, context)!;
+            result.output = AnimationChannel.createInputDataFromArray(sampler.outputs, "output", result.dataCount, context)!;
+            result.inTangent = AnimationChannel.createInputDataFromArray(sampler.inTangents, "intangent", result.dataCount + 1, context)!;
+            result.outTangent = AnimationChannel.createInputDataFromArray(sampler.outTangents, "outtangent", result.dataCount + 1, context)!;
 
             if (!result.input) {
                 context.log.write("Animation channel has no input data, animation ignored", LogLevel.Warning);
@@ -241,7 +241,7 @@ import { Sampler } from "../loader/sampler"
                 context.log.write("Animation channel has no interpolation input, animation ignored", LogLevel.Warning);
                 return null;
             }
-            var interpolationSource: SourceLoader.Source = SourceLoader.Source.fromLink(interpolationInput.source, context);
+            var interpolationSource: SourceLoader.Source = SourceLoader.Source.fromLink(interpolationInput.source, context)!;
             if (!interpolationSource) {
                 context.log.write("Animation channel has no interpolation source, animation ignored", LogLevel.Warning);
                 return null;

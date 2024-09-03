@@ -58,7 +58,7 @@ import * as Utils from "./utils"
     }
 
     export class ControllerLibrary extends EElement {
-        children: Controller[];
+        children: Controller[] = [];
 
 
         static parse(node: Node, context: LoaderContext): ControllerLibrary {

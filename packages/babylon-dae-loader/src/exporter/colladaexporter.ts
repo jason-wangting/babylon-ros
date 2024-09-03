@@ -1,9 +1,4 @@
-import { promises as fs } from 'fs';
-import * as BABYLON from "babylonjs";
-import {RMXModelLoader} from "../model-loader"
-import {RMXModel} from "../model"
-import * as Utils from "./utils"
-import {Log, LogLevel, LogConsole, LogCallback, LogFilter} from "../log"
+import {Log, LogLevel, LogConsole } from "../log"
 import { GeometryChunk } from '../converter/geometry_chunk';
 import { ExporterContext } from './context';
 import { MaterialJSON, GeometryJSON, InfoJSON, BoneJSON, AnimationJSON } from './format';
@@ -24,7 +19,7 @@ import { Document } from './document';
             this.log = new LogConsole();
         }
 
-        export(doc: ConverterDocument.Document): ExporterDocument.Document {
+        export(doc: ConverterDocument.Document): ExporterDocument.Document | null {
             var context: ExporterContext = new ExporterContext(this.log);
 
             if (!doc) {
@@ -51,7 +46,7 @@ import { Document } from './document';
                 // Create the material, if it does not exist yet
                 var material_index: number = converter_materials.indexOf(chunk.material);
                 if (material_index === -1) {
-                    var material: MaterialJSON = Material.toJSON(chunk.material, context);
+                    var material: MaterialJSON = Material.toJSON(chunk.material, context)!;
                     material_index = materials.length;
 
                     converter_materials.push(chunk.material);
@@ -68,7 +63,7 @@ import { Document } from './document';
             var info: InfoJSON = {
                 bounding_box: BoundingBox.toJSON(converter_geometry.boundingBox)
             };
-            var bones: BoneJSON[] = Skeleton.toJSON(converter_geometry.getSkeleton(), context);
+            var bones: BoneJSON[] = Skeleton.toJSON(converter_geometry.getSkeleton()!, context)!;
             var animations: AnimationJSON[] = doc.resampled_animations.map((e) => Animation.toJSON(e, context));
 
             // Assemble result: JSON part

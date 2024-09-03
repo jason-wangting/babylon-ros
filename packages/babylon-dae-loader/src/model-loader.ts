@@ -12,7 +12,7 @@ export class RMXModelLoader {
     constructor() {
     }
 
-    private loadFloatData(json: DataChunkJSON, data: ArrayBuffer): Float32Array  | undefined{
+    private loadFloatData(json: DataChunkJSON, data: ArrayBuffer): Float32Array  | null {
         if (json) {
             return new Float32Array(data, json.byte_offset, json.count * json.stride);
         } else {
@@ -20,7 +20,7 @@ export class RMXModelLoader {
         }
     }
 
-    private loadUint8Data(json: DataChunkJSON, data: ArrayBuffer): Uint8Array | undefined{
+    private loadUint8Data(json: DataChunkJSON, data: ArrayBuffer): Uint8Array | null {
         if (json) {
             return new Uint8Array(data, json.byte_offset, json.count * json.stride);
         } else {
@@ -28,7 +28,7 @@ export class RMXModelLoader {
         }
     }
 
-    private loadUint32Data(json: DataChunkJSON, data: ArrayBuffer): Uint32Array {
+    private loadUint32Data(json: DataChunkJSON, data: ArrayBuffer): Uint32Array | null {
         if (json) {
             return new Uint32Array(data, json.byte_offset, json.count * json.stride);
         } else {
@@ -65,10 +65,13 @@ export class RMXModelLoader {
         result.chunks = json.chunks.map((chunk) => { return this.loadModelChunk(chunk, data) });
 
         // Load skeleton
-        result.skeleton = this.loadSkeleton(json, data);
+        const skeleton = this.loadSkeleton(json, data);
+        if (skeleton) {
+            result.skeleton = skeleton;
+        }
 
         // Load animations
-        result.animations = json.animations.map((animation) => { return this.loadAnimation(animation, data) });
+        result.animations = json.animations.map((animation) => { return this.loadAnimation(animation, data) }).filter(d => d !== null);
 
         // Load materials
         result.materials = json.materials.map((material) => { return this.loadMaterial(material, data) });
@@ -76,7 +79,7 @@ export class RMXModelLoader {
         return result;
     }
 
-    private loadBone(json: BoneJSON, data: ArrayBuffer): Model.RMXBone {
+    private loadBone(json: BoneJSON, data: ArrayBuffer): Model.RMXBone | null {
         if (json == null) {
             return null;
         }
@@ -95,32 +98,32 @@ export class RMXModelLoader {
         return result;
     }
 
-    private loadSkeleton(json: DocumentJSON, data: ArrayBuffer): Model.RMXSkeleton {
+    private loadSkeleton(json: DocumentJSON, data: ArrayBuffer): Model.RMXSkeleton | null {
         if (json.bones == null || json.bones.length == 0) {
             return null;
         }
 
         var result = new Model.RMXSkeleton;
 
-        result.bones = json.bones.map((bone) => { return this.loadBone(bone, data) });
+        result.bones = json.bones.map((bone) => { return this.loadBone(bone, data) }).filter(d => d !== null);
 
         return result;
     }
 
-    private loadAnimationTrack(json: AnimationTrackJSON, data: ArrayBuffer): Model.RMXAnimationTrack {
+    private loadAnimationTrack(json: AnimationTrackJSON, data: ArrayBuffer): Model.RMXAnimationTrack | null {
         if (json == null) {
             return null;
         }
 
         var result = new Model.RMXAnimationTrack;
         result.bone = json.bone;
-        result.pos = this.loadFloatData(json.pos, data);
-        result.rot = this.loadFloatData(json.rot, data);
-        result.scl = this.loadFloatData(json.scl, data);
+        result.pos = this.loadFloatData(json.pos, data)!;
+        result.rot = this.loadFloatData(json.rot, data)!;
+        result.scl = this.loadFloatData(json.scl, data)!;
         return result;
     }
 
-    private loadAnimation(json: AnimationJSON, data: ArrayBuffer): Model.RMXAnimation {
+    private loadAnimation(json: AnimationJSON, data: ArrayBuffer): Model.RMXAnimation | null {
         if (json == null) {
             return null;
         }
@@ -129,7 +132,7 @@ export class RMXModelLoader {
         result.name = json.name;
         result.fps = json.fps;
         result.frames = json.frames;
-        result.tracks = json.tracks.map((track) => { return this.loadAnimationTrack(track, data) });
+        result.tracks = (json.tracks || []).map((track) => { return this.loadAnimationTrack(track, data) }).filter(d => d !== null);
 
         return result;
     }
