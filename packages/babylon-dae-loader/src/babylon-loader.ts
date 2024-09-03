@@ -108,7 +108,7 @@ export class BabylonModelLoader {
         var skinned = model.skeleton? true : false;
         var bones : Bone[] = [];
 
-        let rootMesh = new Mesh("", scene);
+        const rootMesh = new Mesh("root-mesh", scene);
         result.meshes.push(rootMesh);
 
        // Convert RMX skeleton to Skeleton
@@ -135,13 +135,13 @@ export class BabylonModelLoader {
         for (var i = 0; i < model.chunks.length; ++i) {
             var rmx_chunk = model.chunks[i];
 
-            var chunk = new BabylonModelChunk;
+            var chunk = new BabylonModelChunk();
             chunk.geometry = this.createGeometry(rmx_chunk, scene);
             chunk.material = this.createMaterial(model.materials[rmx_chunk.material_index], skinned, scene);
             result.chunks.push(chunk);
 
             if (chunk.geometry) {
-                var m = new Mesh("", scene);
+                var m = new Mesh(rmx_chunk.name, scene);
                 chunk.geometry.applyToMesh(m);
                 m.material = chunk.material;
                 m.parent = rootMesh;
@@ -231,17 +231,14 @@ export class BabylonModelInstance {
 * A factory for producing objects that behave like THREE.SkinnedMesh
 */
 export class BabylonModel {
-    chunks: BabylonModelChunk[];
+    chunks: BabylonModelChunk[] = [];
     skeleton: Skeleton | undefined;
-    animations: Model.RMXAnimation[];
+    animations: Model.RMXAnimation[] = [];
     static identityMatrix: Matrix = new Matrix();
 
 
     meshes: AbstractMesh[] = [];
 
     constructor() {
-        this.chunks = [];
-        this.skeleton = undefined;
-        this.animations = [];
     }
 }

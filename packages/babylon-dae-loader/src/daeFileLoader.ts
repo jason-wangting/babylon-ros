@@ -35,7 +35,7 @@ export class DAEFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     var exporter = new ColladaExporter();
     var exportedDoc = exporter.export(convertedDoc!);
 
-    var modelLoader = new RMXModelLoader;
+    var modelLoader = new RMXModelLoader();
     var model: RMXModel = modelLoader.loadModel(exportedDoc!.json!, exportedDoc!.data!.buffer);
 
     var loader2 = new BabylonLoader.BabylonModelLoader();

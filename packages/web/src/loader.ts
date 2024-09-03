@@ -2,7 +2,7 @@ import { SceneLoader } from "@babylonjs/core";
 import Editor from "./editor";
 import { URDFLoader } from "babylon-urdf-loader";
 import { getBaseAndFileName } from "./util";
-import * as ColladaFileLoader from '@polyhobbyist/babylon-collada-loader';
+import { DAEFileLoader } from "babylon-dae-loader";
 
 
 export default class Loader {
@@ -11,7 +11,7 @@ export default class Loader {
         // support load urdf file
         SceneLoader.RegisterPlugin(new URDFLoader());
         // support load dae file(urdf mesh reference collada sometimes)
-        SceneLoader.RegisterPlugin(new ColladaFileLoader.DAEFileLoader());
+        SceneLoader.RegisterPlugin(new DAEFileLoader());
     }
     /**
      * Load URDF file from URL
