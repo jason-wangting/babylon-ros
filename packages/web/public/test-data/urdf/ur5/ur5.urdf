@@ -7,7 +7,7 @@
    <link name="base_link" >
       <visual>
         <geometry>
-          <mesh filename="package://visual/base.dae" />
+          <mesh filename="package://collision/base.stl" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 5.0"/>
@@ -35,7 +35,7 @@
     <link name="shoulder_link">
       <visual>
         <geometry>
-          <mesh filename="package://visual/shoulder.dae" />
+          <mesh filename="package://collision/shoulder.stl" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 5.0"/>
@@ -63,7 +63,7 @@
     <link name="upper_arm_link">
       <visual>
         <geometry>
-          <mesh filename="package://visual/upperarm.dae" />
+          <mesh filename="package://collision/upperarm.stl" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 5.0"/>
@@ -91,7 +91,7 @@
     <link name="forearm_link">
       <visual>
         <geometry>
-          <mesh filename="package://visual/forearm.dae" />
+          <mesh filename="package://collision/forearm.stl" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 5.0"/>
@@ -119,7 +119,7 @@
     <link name="wrist_1_link">
       <visual>
         <geometry>
-          <mesh filename="package://visual/wrist1.dae" />
+          <mesh filename="package://collision/wrist1.stl" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 5.0"/>
@@ -147,7 +147,7 @@
     <link name="wrist_2_link">
       <visual>
         <geometry>
-          <mesh filename="package://visual/wrist2.dae" />
+          <mesh filename="package://collision/wrist2.stl" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 5.0"/>
@@ -176,7 +176,7 @@
     <link name="wrist_3_link">
       <visual>
         <geometry>
-          <mesh filename="package://visual/wrist3.dae" />
+          <mesh filename="package://collision/wrist3.stl" />
         </geometry>
         <material name="LightGrey">
           <color rgba="0.7 0.7 0.7 5.0"/>

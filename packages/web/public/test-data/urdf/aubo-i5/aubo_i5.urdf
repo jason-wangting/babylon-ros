@@ -10,7 +10,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://visual/base_link.DAE" />
+        <mesh filename="package://collision/base_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -33,7 +33,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://visual/shoulder_Link.DAE" />
+        <mesh filename="package://collision/shoulder_Link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -64,7 +64,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://visual/upperArm_Link.DAE" />
+        <mesh filename="package://collision/upperArm_Link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -95,7 +95,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://visual/foreArm_Link.DAE" />
+        <mesh filename="package://collision/foreArm_Link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -126,7 +126,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://visual/wrist1_Link.DAE" />
+        <mesh filename="package://collision/wrist1_Link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -157,7 +157,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://visual/wrist2_Link.DAE" />
+        <mesh filename="package://collision/wrist2_Link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -188,7 +188,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://visual/wrist3_Link.DAE" />
+        <mesh filename="package://collision/wrist3_Link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
